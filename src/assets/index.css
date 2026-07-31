@@ -1,0 +1,385 @@
+@import "material-symbols/rounded.css";
+@import "./font.css";
+@import "./theme.css";
+
+/* --- CSS Reset & Base --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+input, textarea, [contenteditable="true"], [contenteditable] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+:root {
+  /* Fonts */
+  --font-sans: "HarmonyOS Sans SC", "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", sans-serif;
+  --font-headings: "Nunito", "HarmonyOS Sans SC", sans-serif;
+  --font-mono: "Maple Mono", "Maple Mono NF CN", "ui-monospace", "SFMono-Regular", "SF Mono", "Menlo", "Consolas", "Liberation Mono", "Fira Code", "JetBrains Mono", monospace;
+  --font-terminal: "Maple Mono", "Maple Mono NF CN", "HarmonyOS Sans SC", "system-ui", "-apple-system", monospace;
+
+  /* Theme variables are loaded from theme.css and mapped there */
+  
+  /* Accent Colors (Light) mapped using MD3 Tertiary colors for harmonious palette */
+  --accent-indigo-bg: var(--md-sys-color-primary-container);
+  --accent-indigo-text: var(--md-sys-color-on-primary-container);
+  --accent-indigo-border: var(--md-sys-color-primary);
+  --accent-amber-bg: var(--md-sys-color-tertiary-container);
+  --accent-amber-text: var(--md-sys-color-on-tertiary-container);
+  --accent-amber-border: var(--md-sys-color-tertiary);
+  --accent-emerald-bg: #e8f5e9;
+  --accent-emerald-text: #1b5e20;
+  --accent-emerald-border: #2e7d32;
+  --accent-rose-bg: var(--md-sys-color-error-container);
+  --accent-rose-text: var(--md-sys-color-on-error-container);
+  --accent-rose-border: var(--md-sys-color-error);
+
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.35s ease;
+}
+
+/* --- Dark Theme Variables --- */
+:root.dark {
+  /* Accent Colors (Dark) mapped using MD3 Tertiary colors for harmonious palette */
+  --accent-indigo-bg: var(--md-sys-color-primary-container);
+  --accent-indigo-text: var(--md-sys-color-on-primary-container);
+  --accent-indigo-border: var(--md-sys-color-primary);
+  --accent-amber-bg: var(--md-sys-color-tertiary-container);
+  --accent-amber-text: var(--md-sys-color-on-tertiary-container);
+  --accent-amber-border: var(--md-sys-color-tertiary);
+  --accent-emerald-bg: #1b5e20;
+  --accent-emerald-text: #e8f5e9;
+  --accent-emerald-border: #81c784;
+  --accent-rose-bg: var(--md-sys-color-error-container);
+  --accent-rose-text: var(--md-sys-color-on-error-container);
+  --accent-rose-border: var(--md-sys-color-error);
+}
+
+/* --- Global Styles --- */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 400; /* Regular by default */
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  overflow-x: hidden;
+}
+
+/* Base styles for all headings in the app */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-headings) !important;
+  font-weight: 700 !important; /* Bold for Nunito, HarmonyOS Sans SC maps weight 700 to Medium */
+}
+
+/* Base styles for all buttons in the app */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.m3-segment-btn,
+.m3-nav-item,
+.theme-btn,
+.nav-item-btn {
+  font-family: var(--font-headings) !important;
+  border-radius: 9999px;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--md-sys-color-surface-variant);
+  border-radius: 9999px;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--md-sys-color-surface-variant);
+  cursor: pointer;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* --- Helper Utilities --- */
+.font-sans { font-family: var(--font-sans); }
+.font-mono { font-family: var(--font-mono) !important; }
+code, pre, kbd, samp { font-family: var(--font-mono) !important; }
+
+/* Custom Material You Slider Style */
+.m3-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--md-sys-color-surface-2);
+  border-radius: 9999px;
+  outline: none;
+  transition: background var(--transition-fast);
+}
+
+.m3-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  transition: transform 0.15s, background-color 0.15s;
+}
+
+.m3-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+  background: var(--primary-hover);
+}
+
+.m3-slider::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+  background: var(--primary);
+}
+
+.m3-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  transition: transform 0.15s, background-color 0.15s;
+}
+
+.m3-slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+  background: var(--primary-hover);
+}
+
+.m3-slider::-moz-range-thumb:active {
+  transform: scale(1.05);
+  background: var(--primary);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Unified focus outline styles */
+button:focus-visible,
+.theme-btn:not(.active):focus-visible,
+.nav-item-btn:not(.active):focus-visible {
+  outline: 2px solid var(--primary) !important;
+  outline-offset: 2px !important;
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-normal) forwards;
+}
+
+/* Material Symbols Adjustments */
+.material-symbols-outlined {
+  font-display: block;
+}
+
+.material-symbols-rounded,
+.material-symbols-rounded-fill {
+  font-size: 18px !important;
+}
+
+.material-symbols-rounded-fill {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 18px !important;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga';
+  font-variation-settings: 'FILL' 1;
+}
+
+/* Icon sizes inside buttons */
+button:not(.m3-nav-item):not(.win-btn):not(.action-btn):not(.delete-btn):not(.brand-icon-btn) .material-symbols-rounded,
+button:not(.m3-nav-item):not(.win-btn):not(.action-btn):not(.delete-btn):not(.brand-icon-btn) .material-symbols-rounded-fill,
+.theme-btn .material-symbols-rounded,
+.theme-btn .material-symbols-rounded-fill,
+.nav-item-btn .material-symbols-rounded,
+.nav-item-btn .material-symbols-rounded-fill,
+.btn-round .material-symbols-rounded,
+.btn-capsule .material-symbols-rounded,
+.icon-control,
+.exit-btn .material-symbols-rounded,
+.desktop-icon-btn .material-symbols-rounded {
+  font-size: 18px !important;
+}
+
+/* Sidebar nav icons and toggle button should keep standard size (24px) */
+.m3-nav-item .nav-icon,
+.m3-nav-item .material-symbols-rounded,
+.m3-nav-item .material-symbols-rounded-fill,
+.brand-icon-btn .material-symbols-rounded,
+.brand-icon-btn .material-symbols-rounded-fill,
+.brand-menu-icon {
+  font-size: 24px !important;
+}
+
+/* Settings & MD3 list item leading icons */
+.m3-list-item-leading .material-symbols-rounded,
+.m3-list-item-leading .material-symbols-rounded-fill {
+  font-size: 24px !important;
+}
+
+/* Decrease the icon size of the operation buttons inside the list and window control buttons */
+.icon-btn-small {
+  font-size: 16px !important;
+}
+
+.win-btn .material-symbols-rounded {
+  font-size: 16px !important;
+}
+
+/* --- Focus Mode Selector Styles --- */
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
+  width: 520px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) {
+  width: 520px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
+  width: 520px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+  width: 520px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) {
+  width: 320px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) {
+  width: 520px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 12px;
+  padding-top: 12px;
+}
+
+/* --- Code Color Style Themes --- */
+.theme-github-dark {
+  background-color: #0d1117 !important;
+  color: #c9d1d9 !important;
+}
+.theme-github-dark .code-area-wrapper { background-color: #0d1117 !important; }
+.theme-github-dark .code-textarea { caret-color: #c9d1d9 !important; }
+.theme-github-dark .hljs-keyword { color: #ff7b72; font-weight: 600; }
+.theme-github-dark .hljs-string { color: #a5d6ff; }
+.theme-github-dark .hljs-comment { color: #8b949e; font-style: italic; }
+.theme-github-dark .hljs-number { color: #79c0ff; }
+.theme-github-dark .hljs-function, .theme-github-dark .hljs-title { color: #d2a8ff; font-weight: 600; }
+.theme-github-dark .hljs-built_in { color: #ffa657; }
+.theme-github-dark .hljs-params { color: #c9d1d9; }
+
+.theme-monokai {
+  background-color: #272822 !important;
+  color: #f8f8f2 !important;
+}
+.theme-monokai .code-area-wrapper { background-color: #272822 !important; }
+.theme-monokai .code-textarea { caret-color: #f8f8f2 !important; }
+.theme-monokai .hljs-keyword { color: #f92672; font-weight: 600; }
+.theme-monokai .hljs-string { color: #e6db74; }
+.theme-monokai .hljs-comment { color: #75715e; font-style: italic; }
+.theme-monokai .hljs-number { color: #ae81ff; }
+.theme-monokai .hljs-function, .theme-monokai .hljs-title { color: #a6e22e; font-weight: 600; }
+.theme-monokai .hljs-built_in { color: #66d9ef; }
+.theme-monokai .hljs-params { color: #fd971f; }
+
+.theme-one-dark {
+  background-color: #282c34 !important;
+  color: #abb2bf !important;
+}
+.theme-one-dark .code-area-wrapper { background-color: #282c34 !important; }
+.theme-one-dark .code-textarea { caret-color: #abb2bf !important; }
+.theme-one-dark .hljs-keyword { color: #c678dd; font-weight: 600; }
+.theme-one-dark .hljs-string { color: #98c379; }
+.theme-one-dark .hljs-comment { color: #5c6370; font-style: italic; }
+.theme-one-dark .hljs-number { color: #d19a66; }
+.theme-one-dark .hljs-function, .theme-one-dark .hljs-title { color: #61afef; font-weight: 600; }
+.theme-one-dark .hljs-built_in { color: #e5c07b; }
+.theme-one-dark .hljs-params { color: #abb2bf; }
+
+.theme-vs-code {
+  background-color: #1e1e1e !important;
+  color: #d4d4d4 !important;
+}
+.theme-vs-code .code-area-wrapper { background-color: #1e1e1e !important; }
+.theme-vs-code .code-textarea { caret-color: #d4d4d4 !important; }
+.theme-vs-code .hljs-keyword { color: #569cd6; font-weight: 600; }
+.theme-vs-code .hljs-string { color: #ce9178; }
+.theme-vs-code .hljs-comment { color: #6a9955; font-style: italic; }
+.theme-vs-code .hljs-number { color: #b5cea8; }
+.theme-vs-code .hljs-function, .theme-vs-code .hljs-title { color: #dcdcaa; font-weight: 600; }
+.theme-vs-code .hljs-built_in { color: #4ec9b0; }
+.theme-vs-code .hljs-params { color: #9cdcfe; }
+
+.theme-github-light {
+  background-color: #ffffff !important;
+  color: #24292e !important;
+}
+.theme-github-light .code-area-wrapper { background-color: #ffffff !important; }
+.theme-github-light .code-textarea { caret-color: #24292e !important; }
+.theme-github-light .hljs-keyword { color: #d73a49; font-weight: 600; }
+.theme-github-light .hljs-string { color: #032f62; }
+.theme-github-light .hljs-comment { color: #6a737d; font-style: italic; }
+.theme-github-light .hljs-number { color: #005cc5; }
+.theme-github-light .hljs-function, .theme-github-light .hljs-title { color: #6f42c1; font-weight: 600; }
+.theme-github-light .hljs-built_in { color: #e36209; }
+.theme-github-light .hljs-params { color: #24292e; }
+

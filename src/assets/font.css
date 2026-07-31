@@ -1,0 +1,111 @@
+@font-face {
+  font-family: 'HarmonyOS Sans SC';
+  src: url('./fonts/HarmonyOS_Sans_SC_Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'HarmonyOS Sans SC';
+  src: url('./fonts/HarmonyOS_Sans_SC_Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'HarmonyOS Sans SC';
+  src: url('./fonts/HarmonyOS_Sans_SC_Medium.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('./fonts/Nunito.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Nunito';
+  src: url('./fonts/Nunito.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Maple Mono Font Family */
+@font-face {
+  font-family: 'Maple Mono';
+  src: url('./fonts/MapleMono-NF-CN-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Maple Mono';
+  src: url('./fonts/MapleMono-NF-CN-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Maple Mono';
+  src: url('./fonts/MapleMono-NF-CN-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Maple Mono';
+  src: url('./fonts/MapleMono-NF-CN-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Maple Mono NF CN';
+  src: url('./fonts/MapleMono-NF-CN-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Maple Mono NF CN';
+  src: url('./fonts/MapleMono-NF-CN-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'Maple Mono NF CN';
+  src: url('./fonts/MapleMono-NF-CN-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Maple Mono NF CN';
+  src: url('./fonts/MapleMono-NF-CN-BoldItalic.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+}
+
+.material-symbols-rounded-fill {
+  font-family: "Material Symbols Rounded";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga";
+
+  font-variation-settings: 'FILL' 1;
+}
