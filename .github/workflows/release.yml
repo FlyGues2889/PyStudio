@@ -1,0 +1,71 @@
+name: Release Tauri App
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Tauri CLI
+        run: cargo install tauri-cli
+
+      - name: Build Tauri installer
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "Release ${{ github.ref_name }}"
+          releaseBody: ""
+          releaseDraft: false
+          prerelease: false
+          args: --target x86_64-pc-windows-msvc
+
+      - name: Set EXE path
+        run: |
+          $version = "${{ github.ref_name }}".Replace('v', '')
+          $exePath = "./src-tauri/target/x86_64-pc-windows-msvc/release/pystudio.exe"
+          $destName = "PyStudio-green-$version-windows-x64.exe"
+          Copy-Item -Path "$exePath" -Destination "$destName"
+          echo "EXE_PATH=$destName" >> $env:GITHUB_ENV
+
+      - name: Upload green version
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ${{ env.EXE_PATH }}
+          name: "Release ${{ github.ref_name }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
