@@ -1,4 +1,4 @@
-name: Release Tauri App
+﻿name: Release Tauri App
 on:
   push:
     tags:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -36,20 +36,17 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
-
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli
-
-      - name: Build Tauri installer
-        run: cargo tauri build --target x86_64-pc-windows-msvc
+      - name: Build Tauri app
+        run: pnpm tauri build --target x86_64-pc-windows-msvc
 
       - name: Set EXE path
+        shell: pwsh
         run: |
           $version = "${{ github.ref_name }}".Replace('v', '')
-          $exePath = "./src-tauri/target/x86_64-pc-windows-msvc/release/pystudio.exe"
+          $exePath = Join-Path $PWD "src-tauri/target/x86_64-pc-windows-msvc/release/pystudio.exe"
           $destName = "PyStudio-green-$version-windows-x64.exe"
-          Copy-Item -Path "$exePath" -Destination "$destName"
-          echo "EXE_PATH=$destName" >> $env:GITHUB_ENV
+          Copy-Item -Path $exePath -Destination $destName
+          "EXE_PATH=$destName" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Upload green version
         uses: softprops/action-gh-release@v2

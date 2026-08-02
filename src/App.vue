@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, onMounted, watch, computed } from 'vue';
 import { FSItem, EditorTab, ConsoleOutput, AppConfig } from './types';
 import { DEFAULT_WORKSPACE_ITEMS } from './utils/defaultWorkspace';
@@ -104,6 +104,13 @@ const toggleMenu = (menuName: 'file' | 'edit') => {
 
 const closeMenus = () => {
   activeMenu.value = null;
+  // Delay restoring editor focus to avoid stealing focus from find/replace inputs
+  setTimeout(() => {
+    const active = document.activeElement;
+    if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) {
+      codeEditorRef.value?.focusEditor?.();
+    }
+  }, 60);
 };
 
 const handleMenuOpenFile = () => {
@@ -388,6 +395,39 @@ const handleDownloadFile = (item: FSItem) => {
   showToast(t('toastExported').replace('{name}', item.name));
 };
 
+// Export entire workspace to local folder via File System Access API
+const handleExportWorkspace = async () => {
+  const showDirectoryPicker = (window as any).showDirectoryPicker;
+  if (!showDirectoryPicker) {
+    showToast('您的浏览器不支持文件夹选择，请使用最新版 Chrome/Edge');
+    return;
+  }
+  try {
+    const dirHandle = await showDirectoryPicker();
+    const writeItem = async (item: FSItem, handle: any) => {
+      if (item.isFolder && item.children) {
+        const subDir = await handle.getDirectoryHandle(item.name, { create: true });
+        for (const child of item.children) {
+          await writeItem(child, subDir);
+        }
+      } else {
+        const fileHandle = await handle.getFileHandle(item.name, { create: true });
+        const writable = await fileHandle.createWritable();
+        await writable.write(item.content || '');
+        await writable.close();
+      }
+    };
+    for (const item of workspaceItems.value) {
+      await writeItem(item, dirHandle);
+    }
+    showToast(t('exportWorkspace') + ' 成功');
+  } catch (err: any) {
+    if (err.name !== 'AbortError') {
+      showToast('导出失败: ' + (err.message || err));
+    }
+  }
+};
+
 // Import uploaded files
 const handleImportFiles = async (files: FileList) => {
   for (let i = 0; i < files.length; i++) {
@@ -562,6 +602,13 @@ const handleLoadTutorialCodeToEditor = (payload: { code: string; topicId: string
     workspaceItems.value.push(demoFile);
   } else {
     demoFile.content = code;
+  }
+  // Sync content to already-open tab so editor shows latest code immediately
+  const existingTab = openTabs.value.find((t) => t.fileId === demoFile.id);
+  if (existingTab) {
+    existingTab.content = code;
+    existingTab.savedContent = code;
+    existingTab.isDirty = false;
   }
   openFileInTab(demoFile);
   showToast('已加载教程代码至编辑器');
@@ -806,6 +853,7 @@ onMounted(() => {
         @run-file="handleRunFile"
         @download-file="handleDownloadFile"
         @import-files="handleImportFiles"
+        @export-workspace="handleExportWorkspace"
         @toggle-collapse="fileTreeCollapsed = !fileTreeCollapsed"
         @contextmenu-filetree="(e, item) => openContextMenu(e, 'filetree', item)"
       />
@@ -990,7 +1038,7 @@ onMounted(() => {
                   <template #headline>{{ t('aboutApp') }}</template>
                   <template #supporting>{{ t('aboutAppDesc') }}</template>
                   <template #trailing>
-                    <span class="about-value">v0.2.0</span>
+                    <span class="about-value">v0.2.1</span>
                   </template>
                 </MD3ListItem>
 
@@ -1013,8 +1061,8 @@ onMounted(() => {
                   <template #supporting>{{ t('aiEngineDesc') }}</template>
                   <template #trailing>
                     <div class="gemini-badge">
-                      <span class="material-symbols-rounded-fill" style="font-size: 14px;">smart_toy</span>
-                      <span>Gemini AI</span>
+                      <span class="material-symbols-rounded-fill" style="font-size: 14px;">bolt</span>
+                      <span>vibe coding</span>
                     </div>
                   </template>
                 </MD3ListItem>
@@ -1080,6 +1128,10 @@ onMounted(() => {
       @delete="item => requestDeleteItem(item)"
       @run="item => handleRunFile(item)"
     />
+
+    <!-- Hidden file inputs for menu open file/folder -->
+    <input ref="openFileInputRef" type="file" accept=".py,.txt,.json,.md" style="display:none" @change="handleFileInputChange" />
+    <input ref="openFolderInputRef" type="file" style="display:none" webkitdirectory directory @change="handleFileInputChange" />
   </div>
 </template>
 

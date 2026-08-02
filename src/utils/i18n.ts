@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+﻿import { ref, computed } from 'vue';
 import { safeStorage } from './storage';
 
 export type Language = 'zh' | 'en';
@@ -34,10 +34,10 @@ const translations = {
     editMenu: '编辑',
     newFile: '新建文件',
     newFolder: '新建文件夹',
-    openFile: '打开文件',
-    openFolder: '打开文件夹',
+    openFile: '导入文件',
+    openFolder: '导入文件夹',
     save: '保存',
-    downloadFile: '下载文件',
+    downloadFile: '导出文件到本地',
     copy: '复制',
     cut: '剪切',
     paste: '粘贴',
@@ -72,8 +72,8 @@ const translations = {
     aboutAppDesc: '基于浏览器 WASM 与 Pyodide 的本地 Python 集成开发环境',
     demoMode: '演示模式',
     demoModeSubtitle: '开启后使用轻量演示引擎，关闭则使用离线完整 Python WASM 引擎',
-    aiEngine: 'AI 辅助开发引擎',
-    aiEngineDesc: '由 Gemini AI 提供辅助开发与智能技术支持',
+    aiEngine: 'vibe coding',
+    aiEngineDesc: '与 AI 一起流畅编码，让创意自然流淌',
 
     // Code Editor & Tabs
     welcomeTitle: '欢迎使用 PyStudio Python IDE',
@@ -110,7 +110,9 @@ const translations = {
     delete: '删除',
     run: '运行',
     runScriptTooltip: '运行此脚本',
-    downloadExport: '下载导出',
+    downloadExport: '导出文件到本地',
+    exportWorkspace: '导出工作区到本地',
+    exportWorkspaceTooltip: '导出整个工作区到本地文件夹',
 
     // REPL Console
     replTitle: 'Python 3.11 交互式 REPL 终端',
@@ -177,10 +179,10 @@ const translations = {
     editMenu: 'Edit',
     newFile: 'New File',
     newFolder: 'New Folder',
-    openFile: 'Open File',
-    openFolder: 'Open Folder',
+    openFile: 'Import File',
+    openFolder: 'Import Folder',
     save: 'Save',
-    downloadFile: 'Download File',
+    downloadFile: 'Export File to Local',
     copy: 'Copy',
     cut: 'Cut',
     paste: 'Paste',
@@ -215,8 +217,8 @@ const translations = {
     aboutAppDesc: 'Local Python IDE powered by WebAssembly & Pyodide',
     demoMode: 'Demo Mode',
     demoModeSubtitle: 'Enable to use lightweight demo engine, disable for full offline Python WASM engine',
-    aiEngine: 'AI Assist Engine',
-    aiEngineDesc: 'Powered by Gemini AI for smart development support',
+    aiEngine: 'vibe coding',
+    aiEngineDesc: 'Flow-state coding with AI — let ideas flow naturally',
 
     // Code Editor & Tabs
     welcomeTitle: 'Welcome to PyStudio Python IDE',
@@ -253,7 +255,9 @@ const translations = {
     delete: 'Delete',
     run: 'Run',
     runScriptTooltip: 'Run this script',
-    downloadExport: 'Download Export',
+    downloadExport: 'Export File to Local',
+    exportWorkspace: 'Export Workspace to Local',
+    exportWorkspaceTooltip: 'Export entire workspace to local folder',
 
     // REPL Console
     replTitle: 'Python 3.11 Interactive REPL Terminal',

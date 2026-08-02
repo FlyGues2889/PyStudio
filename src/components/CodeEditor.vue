@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, watch, computed, onMounted, nextTick } from 'vue';
 import { EditorTab, ConsoleOutput, AppConfig, FSItem } from '../types';
 import { pythonRunner } from '../utils/pythonRunner';
@@ -555,7 +555,8 @@ defineExpose({
   openReplaceBar,
   triggerCopy,
   triggerCut,
-  triggerPaste
+  triggerPaste,
+  focusEditor: () => textareaRef.value?.focus()
 });
 
 // Auto scroll terminal to bottom

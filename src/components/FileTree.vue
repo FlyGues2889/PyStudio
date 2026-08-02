@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed } from 'vue';
 import { FSItem } from '../types';
 import FileTreeNode from './FileTreeNode.vue';
@@ -23,6 +23,7 @@ const emit = defineEmits<{
   (e: 'download-file', item: FSItem): void;
   (e: 'toggle-collapse'): void;
   (e: 'import-files', files: FileList): void;
+  (e: 'export-workspace'): void;
   (e: 'contextmenu-filetree', event: MouseEvent, item: FSItem | null): void;
 }>();
 
@@ -202,6 +203,14 @@ const filteredItems = computed(() => {
             icon="upload_file"
             :title="t('importFilesTooltip')"
             @click="triggerFileUpload"
+          />
+          <!-- Export Workspace -->
+          <MD3IconButton
+            variant="standard"
+            size="SM"
+            icon="drive_folder_upload"
+            :title="t('exportWorkspaceTooltip')"
+            @click="emit('export-workspace')"
           />
           <input
             ref="fileInputRef"

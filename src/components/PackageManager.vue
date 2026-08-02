@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { pythonRunner } from '../utils/pythonRunner';
 import { ConsoleOutput, FSItem } from '../types';
@@ -20,7 +20,7 @@ const emit = defineEmits<{
 const { t, lang } = useI18n();
 const customPackageName = ref('');
 const filterQuery = ref('');
-const isInstalling = ref(false);
+const installingSet = ref<Set<string>>(new Set());
 
 const installedSet = ref<Set<string>>(new Set(['numpy']));
 
@@ -119,10 +119,10 @@ const availablePackages = computed(() => {
 });
 
 const handleInstall = async (pkgName: string) => {
-  const cleanName = pkgName.trim();
-  if (isInstalling.value || !cleanName) return;
+  const cleanName = pkgName.trim().toLowerCase();
+  if (!cleanName || installingSet.value.has(cleanName)) return;
 
-  isInstalling.value = true;
+  installingSet.value.add(cleanName);
   const ok = await pythonRunner.loadPackage(cleanName, (out) => {
     emit('add-console-output', out);
   });
@@ -131,7 +131,7 @@ const handleInstall = async (pkgName: string) => {
     installedSet.value.add(cleanName);
     saveInstalledPackages(Array.from(installedSet.value));
   }
-  isInstalling.value = false;
+  installingSet.value.delete(cleanName);
   customPackageName.value = '';
 };
 
@@ -160,9 +160,9 @@ const handleUninstall = (pkgName: string) => {
           <MD3Input v-model="customPackageName" icon="search" :placeholder="t('pkgSearchPlaceholder')"
             @enter="handleInstall(customPackageName)" @input="filterQuery = customPackageName" />
         </div>
-        <MD3Button variant="filled" size="M" icon="download" :disabled="isInstalling || !customPackageName.trim()"
+        <MD3Button variant="filled" size="M" icon="download" :disabled="installingSet.has(customPackageName.trim().toLowerCase()) || !customPackageName.trim()"
           @click="handleInstall(customPackageName)">
-          {{ isInstalling ? t('installing') : t('installPkg') }}
+          {{ installingSet.has(customPackageName.trim().toLowerCase()) ? t('installing') : t('installPkg') }}
         </MD3Button>
       </div>
     </div>
@@ -230,9 +230,9 @@ const handleUninstall = (pkgName: string) => {
             </div>
 
             <div class="item-right">
-              <MD3Button variant="filled" size="S" icon="download" :disabled="isInstalling"
+              <MD3Button variant="filled" size="S" icon="download" :disabled="installingSet.has(pkg.name.toLowerCase())"
                 @click="handleInstall(pkg.name)">
-                {{ t('loadPkg') }}
+                {{ installingSet.has(pkg.name.toLowerCase()) ? t('installing') : t('loadPkg') }}
               </MD3Button>
             </div>
           </div>
