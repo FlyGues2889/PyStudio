@@ -1294,7 +1294,7 @@ onMounted(() => {
                   <template #headline>{{ t('aboutApp') }}</template>
                   <template #supporting>{{ t('aboutAppDesc') }}</template>
                   <template #trailing>
-                    <MD3Badge>v0.3.0</MD3Badge>
+                    <MD3Badge>v0.3.1</MD3Badge>
                   </template>
                 </MD3ListItem>
 

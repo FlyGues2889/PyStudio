@@ -169,7 +169,7 @@ if __name__ == "__main__":
         path: '/data/sample_data.json',
         isFolder: false,
         parentId: 'folder-data',
-        content: `{\n  "project": "PyStudio Local Python IDE",\n  "version": "0.3.0",\n  "features": [\n    "File Tree Explorer",\n    "Pyodide Python 3.11 Execution",\n    "Interactive REPL Console",\n    "Gemini AI Code Assistant"\n  ]\n}`
+        content: `{\n  "project": "PyStudio Local Python IDE",\n  "version": "0.3.1",\n  "features": [\n    "File Tree Explorer",\n    "Pyodide Python 3.11 Execution",\n    "Interactive REPL Console",\n    "Gemini AI Code Assistant"\n  ]\n}`
       }
     ]
   },
