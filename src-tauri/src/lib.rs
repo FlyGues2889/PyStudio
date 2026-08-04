@@ -1,3 +1,6 @@
+mod fs;
+mod python;
+
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -8,7 +11,27 @@ fn greet(name: &str) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .plugin(tauri_plugin_dialog::init())
+        .manage(python::PythonState::default())
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            fs::fs_read_directory,
+            fs::fs_read_file,
+            fs::fs_write_file,
+            fs::fs_create_file,
+            fs::fs_create_dir,
+            fs::fs_rename,
+            fs::fs_delete,
+            fs::fs_materialize_workspace,
+            fs::ensure_default_workspace,
+            python::python_detect,
+            python::python_run,
+            python::python_stop,
+            python::python_repl_start,
+            python::python_repl_input,
+            python::python_repl_stop,
+            python::python_pip_install,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -72,7 +72,7 @@ defineExpose({
 .md3-input-icon {
   position: absolute;
   left: 14px;
-  font-size: 1.125rem;
+  font-size: var(--text-size-s);
   color: var(--text-tertiary);
   pointer-events: none;
   user-select: none;

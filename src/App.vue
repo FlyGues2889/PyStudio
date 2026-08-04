@@ -1,9 +1,9 @@
 ﻿<script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, watch, computed, nextTick } from 'vue';
 import { FSItem, EditorTab, ConsoleOutput, AppConfig } from './types';
 import { DEFAULT_WORKSPACE_ITEMS } from './utils/defaultWorkspace';
 import { pythonRunner } from './utils/pythonRunner';
-import { useI18n, setLanguage, Language } from './utils/i18n';
+import { useI18n } from './utils/i18n';
 import MD3Sidebar from './components/MD3Components/MD3Sidebar.vue';
 import SidebarNavItem from './components/SidebarNavItem.vue';
 import FileTree from './components/FileTree.vue';
@@ -22,13 +22,18 @@ import MD3Snackbar from './components/MD3Components/MD3Snackbar.vue';
 import MD3LoadingModal from './components/MD3Components/MD3LoadingModal.vue';
 import MD3Select from './components/MD3Components/MD3Select.vue';
 import MD3IconButton from './components/MD3Components/MD3IconButton.vue';
+import MD3Badge from './components/MD3Components/MD3Badge.vue';
 import { minimizeWindow, maximizeWindow, closeWindow } from './utils/tauriWindow';
 import EditorPreview from './components/EditorPreview.vue';
 import MD3Dialog from './components/MD3Components/MD3Dialog.vue';
 import ContextMenu from './components/ContextMenu.vue';
 import { safeStorage } from './utils/storage';
+import { nativeApi, fsEntriesToFSItems, absPath } from './utils/native';
+import { nativePython } from './utils/nativePython';
+import { revealItemInDir, openPath } from '@tauri-apps/plugin-opener';
 
 import { syncWorkspacePackages } from './utils/packageUtils';
+import { setQuizQuestionResult, syncQuizCompletion, getQuizQuestionResult } from './components/tutor/quizData';
 
 const { t } = useI18n();
 
@@ -85,6 +90,24 @@ const closeContextMenu = () => {
   contextMenuState.value.visible = false;
 };
 
+// 在系统文件资源管理器中打开/定位文件（文件选中、文件夹打开）
+const handleRevealInExplorer = async (item: FSItem) => {
+  if (!workspaceRootPath.value) {
+    showToast('请先打开本地工作区');
+    return;
+  }
+  const fullPath = absPath(workspaceRootPath.value, item.path);
+  try {
+    if (item.isFolder) {
+      await openPath(fullPath);
+    } else {
+      await revealItemInDir(fullPath);
+    }
+  } catch (err: any) {
+    showToast('无法打开资源管理器: ' + (err?.message || err));
+  }
+};
+
 // Delete confirmation dialog state
 const isDeleteDialogOpen = ref(false);
 const deleteTargetItem = ref<FSItem | null>(null);
@@ -113,12 +136,63 @@ const closeMenus = () => {
   }, 60);
 };
 
-const handleMenuOpenFile = () => {
+const handleMenuOpenFile = async () => {
+  // Tauri 环境下用原生文件对话框导入单个文件
+  if (nativeApi.available()) {
+    const path = await nativeApi.pickFile();
+    if (path) {
+      try {
+        const content = await nativeApi.readFile(path);
+        const name = path.split(/[\\/]/).pop() || 'imported.py';
+        const newFile: FSItem = {
+          id: `file-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          name,
+          path: `/${name}`,
+          isFolder: false,
+          content,
+          parentId: null
+        };
+        workspaceItems.value.push(newFile);
+        showToast(t('toastImported'));
+        openFileInTab(newFile);
+      } catch (err: any) {
+        showToast('导入失败: ' + (err?.message || err));
+      }
+    }
+    return;
+  }
   openFileInputRef.value?.click();
 };
 
-const handleMenuOpenFolder = () => {
+const handleMenuOpenFolder = async () => {
+  // Tauri 环境下打开本地真实文件夹作为工作区
+  if (nativeApi.available()) {
+    const path = await nativeApi.pickFolder();
+    if (path) {
+      await loadWorkspaceFromDisk(path);
+    }
+    return;
+  }
   openFolderInputRef.value?.click();
+};
+
+// 从本地磁盘目录构建工作区（替换虚拟文件树）
+const loadWorkspaceFromDisk = async (root: string) => {
+  try {
+    const entries = await nativeApi.readDirectory(root);
+    workspaceItems.value = fsEntriesToFSItems(entries);
+    openTabs.value = [];
+    activeEditorTabId.value = null;
+    workspaceRootPath.value = root;
+    pythonRunner.workspaceRoot = root;
+    safeStorage.setItem('pystudio_workspace_root', root);
+
+    const mainFile = findFileByPath(workspaceItems.value, '/main.py');
+    if (mainFile) openFileInTab(mainFile);
+    showToast('已打开本地工作区: ' + root);
+  } catch (err: any) {
+    showToast('打开工作区失败: ' + (err?.message || err));
+  }
 };
 
 const handleFileInputChange = (e: Event) => {
@@ -144,18 +218,10 @@ const config = ref<AppConfig>({
   autoSave: true,
   showLineNumbers: true,
   codeTheme: 'github-dark',
-  language: (safeStorage.getItem('pystudio_lang') as Language) || 'zh',
   enableWheelZoom: true,
+  autoPairQuotes: true,
   demoMode: false
 });
-
-watch(
-  () => config.value.language,
-  (newLang) => {
-    if (newLang) setLanguage(newLang);
-  },
-  { immediate: true }
-);
 
 // Toast message notifier
 const toastMessage = ref<string | null>(null);
@@ -172,17 +238,95 @@ const openTabs = ref<EditorTab[]>([]);
 const activeEditorTabId = ref<string | null>(null);
 const consoleOutputs = ref<ConsoleOutput[]>([]);
 
-// Initialize Workspace from LocalStorage
+// 本地工作区根目录（Tauri 原生文件系统模式），null 表示纯虚拟工作区
+const workspaceRootPath = ref<string | null>(null);
+const engineLabel = computed(() => nativePython.statusLabel.value);
+
+// ---- 会话恢复：上次关闭时打开的标签页 + 光标位置 ----
+const SESSION_KEY = 'pystudio_session';
+const sessionCursors = ref<Record<string, { line: number; col: number }>>({});
+
+const saveSession = () => {
+  try {
+    safeStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({
+        tabs: openTabs.value.map((t) => t.path),
+        active: activeTabObject.value?.path || null,
+        cursors: sessionCursors.value
+      })
+    );
+  } catch (e) {}
+};
+
+const handleCursorChange = (payload: { path: string; line: number; col: number }) => {
+  if (!payload?.path) return;
+  sessionCursors.value[payload.path] = { line: payload.line, col: payload.col };
+  saveSession();
+};
+
+// 重新打开上次会话的标签页，并恢复活动标签与光标
+const restoreSession = () => {
+  try {
+    const raw = safeStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+    const session = JSON.parse(raw);
+    if (session.cursors) {
+      sessionCursors.value = session.cursors;
+    }
+    if (Array.isArray(session.tabs) && session.tabs.length > 0) {
+      const files = session.tabs
+        .map((p: string) => findFileByPath(workspaceItems.value, p))
+        .filter((f): f is FSItem => !!f);
+      openTabs.value = [];
+      for (const f of files) openFileInTab(f);
+      if (session.active) {
+        const activeTab = openTabs.value.find((t) => t.path === session.active);
+        if (activeTab) activeEditorTabId.value = activeTab.id;
+      }
+    }
+  } catch (e) {}
+};
+
+// Initialize Workspace from LocalStorage / 本地工作区
 onMounted(async () => {
-  const savedWorkspace = safeStorage.getItem('pystudio_workspace');
-  if (savedWorkspace) {
+  // 检测本机 Python，用于引擎徽标展示（异步，不阻塞初始化）
+  if (nativeApi.available()) {
+    nativePython.detect();
+  }
+
+  // 恢复/初始化工作区：
+  // - Tauri 环境：由 Rust 在应用数据目录确保 pystudio_files 示例工作区存在（首次启动才写入），
+  //   再加载最近打开的工作区（或默认的 pystudio_files）。
+  // - 纯浏览器：恢复 localStorage 中的虚拟工作区。
+  const loadVirtualWorkspace = () => {
+    const savedWorkspace = safeStorage.getItem('pystudio_workspace');
+    if (savedWorkspace) {
+      try {
+        workspaceItems.value = JSON.parse(savedWorkspace);
+        return;
+      } catch (e) {}
+    }
+    workspaceItems.value = DEFAULT_WORKSPACE_ITEMS;
+  };
+
+  const savedRoot = safeStorage.getItem('pystudio_workspace_root');
+  if (nativeApi.available()) {
     try {
-      workspaceItems.value = JSON.parse(savedWorkspace);
+      // 只确保空文件夹存在（首次启动），不写入任何示例文件
+      const defaultRoot = await nativeApi.ensureDefaultWorkspace();
+      const root = savedRoot || defaultRoot;
+      const entries = await nativeApi.readDirectory(root);
+      workspaceItems.value = fsEntriesToFSItems(entries);
+      workspaceRootPath.value = root;
+      pythonRunner.workspaceRoot = root;
+      safeStorage.setItem('pystudio_workspace_root', root);
     } catch (e) {
-      workspaceItems.value = DEFAULT_WORKSPACE_ITEMS;
+      // 磁盘工作区不可用，退回虚拟工作区
+      loadVirtualWorkspace();
     }
   } else {
-    workspaceItems.value = DEFAULT_WORKSPACE_ITEMS;
+    loadVirtualWorkspace();
   }
 
   const savedConfig = safeStorage.getItem('pystudio_config');
@@ -198,9 +342,15 @@ onMounted(async () => {
     openFileInTab(mainFile);
   }
 
+  // 恢复上次会话打开的标签页与光标位置
+  restoreSession();
+
   // Update theme mode
   updateTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
+
+  // 关闭/刷新前确保会话（标签页 + 光标）落盘
+  window.addEventListener('beforeunload', saveSession);
 
   // Initialize in Presentation / Demo Mode instantly
   consoleOutputs.value.push({
@@ -221,6 +371,10 @@ watch(config, (newVal) => {
   safeStorage.setItem('pystudio_config', JSON.stringify(newVal));
   updateTheme();
 }, { deep: true });
+
+// 会话：标签页与活动标签变化时保存
+watch(openTabs, saveSession, { deep: true });
+watch(activeEditorTabId, saveSession);
 
 // Theme handling
 const updateTheme = () => {
@@ -299,6 +453,14 @@ const handleCreateFile = (parentId: string | null, name: string) => {
     workspaceItems.value.push(newFile);
   }
 
+  // 原生工作区：在磁盘上创建文件并写入初始内容
+  if (workspaceRootPath.value) {
+    const parentAbs = parentId
+      ? absPath(workspaceRootPath.value, getParentPath(parentId))
+      : workspaceRootPath.value;
+    nativeApi.writeFile(absPath(parentAbs, `/${name}`), newFile.content).catch(() => {});
+  }
+
   showToast(t('toastFileCreated').replace('{name}', name));
   openFileInTab(newFile);
 };
@@ -326,19 +488,38 @@ const handleCreateFolder = (parentId: string | null, name: string) => {
     workspaceItems.value.push(newFolder);
   }
 
+  // 原生工作区：在磁盘上创建真实文件夹
+  if (workspaceRootPath.value) {
+    const parentAbs = parentId
+      ? absPath(workspaceRootPath.value, getParentPath(parentId))
+      : workspaceRootPath.value;
+    nativeApi.createDir(parentAbs, name).catch(() => {});
+  }
+
   showToast(t('toastFolderCreated').replace('{name}', name));
 };
 
 // Rename File/Folder
 const handleRenameItem = (item: FSItem, newName: string) => {
+  const oldPath = item.path;
   item.name = newName;
   item.path = item.parentId ? `${getParentPath(item.parentId)}/${newName}` : `/${newName}`;
+
+  // 文件夹重命名后同步子节点的相对路径
+  if (item.isFolder && item.children) {
+    rebaseChildrenPaths(item, oldPath, item.path);
+  }
 
   // Update tabs if file renamed
   const tab = openTabs.value.find((t) => t.fileId === item.id);
   if (tab) {
     tab.name = newName;
     tab.path = item.path;
+  }
+
+  // 原生工作区：重命名磁盘上的真实文件/文件夹
+  if (workspaceRootPath.value) {
+    nativeApi.renamePath(absPath(workspaceRootPath.value, oldPath), newName).catch(() => {});
   }
   showToast(t('toastRenamed'));
 };
@@ -351,6 +532,10 @@ const handleDeleteItem = (item: FSItem) => {
 const confirmDelete = () => {
   if (deleteTargetItem.value) {
     const item = deleteTargetItem.value;
+    // 原生工作区：先删除磁盘上的真实文件/文件夹
+    if (workspaceRootPath.value) {
+      nativeApi.deletePath(absPath(workspaceRootPath.value, item.path)).catch(() => {});
+    }
     removeItemFromTree(workspaceItems.value, item.id);
     // Close tab if open
     openTabs.value = openTabs.value.filter((t) => t.fileId !== item.id);
@@ -393,39 +578,6 @@ const handleDownloadFile = (item: FSItem) => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast(t('toastExported').replace('{name}', item.name));
-};
-
-// Export entire workspace to local folder via File System Access API
-const handleExportWorkspace = async () => {
-  const showDirectoryPicker = (window as any).showDirectoryPicker;
-  if (!showDirectoryPicker) {
-    showToast('您的浏览器不支持文件夹选择，请使用最新版 Chrome/Edge');
-    return;
-  }
-  try {
-    const dirHandle = await showDirectoryPicker();
-    const writeItem = async (item: FSItem, handle: any) => {
-      if (item.isFolder && item.children) {
-        const subDir = await handle.getDirectoryHandle(item.name, { create: true });
-        for (const child of item.children) {
-          await writeItem(child, subDir);
-        }
-      } else {
-        const fileHandle = await handle.getFileHandle(item.name, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(item.content || '');
-        await writable.close();
-      }
-    };
-    for (const item of workspaceItems.value) {
-      await writeItem(item, dirHandle);
-    }
-    showToast(t('exportWorkspace') + ' 成功');
-  } catch (err: any) {
-    if (err.name !== 'AbortError') {
-      showToast('导出失败: ' + (err.message || err));
-    }
-  }
 };
 
 // Import uploaded files
@@ -529,6 +681,10 @@ const handleSaveTab = (tabId: string) => {
     if (file) {
       file.content = tab.content;
     }
+    // 原生工作区：同时写回磁盘
+    if (workspaceRootPath.value) {
+      nativeApi.writeFile(absPath(workspaceRootPath.value, tab.path), tab.content).catch(() => {});
+    }
     syncWorkspacePackages(workspaceItems.value);
     showToast(t('toastFileSaved').replace('{name}', tab.name));
   }
@@ -565,14 +721,27 @@ function removeItemFromTree(items: FSItem[], id: string): boolean {
   return false;
 }
 
-const activeTutorialSource = ref<{ id: string; title: string } | null>(null);
+// 文件夹重命名后，把后代节点的相对路径前缀一并更新
+function rebaseChildrenPaths(item: FSItem, oldPrefix: string, newPrefix: string) {
+  if (!item.children) return;
+  for (const child of item.children) {
+    child.path = child.path.replace(oldPrefix, newPrefix);
+    if (child.isFolder) rebaseChildrenPaths(child, oldPrefix, newPrefix);
+  }
+}
+
+const activeTutorialSource = ref<{ id: string; title: string; isQuiz?: boolean; questionId?: string; expectedOutput?: string } | null>(null);
 const activeTutorialTopicId = ref<string>(safeStorage.getItem('pystudio_last_tutorial_topic') || 'p1_home');
+const activeQuizPassed = ref(false);
 
 // Load tutorial code to editor
-const handleLoadTutorialCodeToEditor = (payload: { code: string; topicId: string; topicTitle: string } | string) => {
+const handleLoadTutorialCodeToEditor = (payload: { code: string; topicId: string; topicTitle: string; isQuiz?: boolean; questionId?: string; expectedOutput?: string } | string) => {
   let code = '';
   let topicId = '';
   let topicTitle = '';
+  let isQuiz = false;
+  let questionId = '';
+  let expectedOutput = '';
 
   if (typeof payload === 'string') {
     code = payload;
@@ -580,11 +749,25 @@ const handleLoadTutorialCodeToEditor = (payload: { code: string; topicId: string
     code = payload.code || '';
     topicId = payload.topicId || '';
     topicTitle = payload.topicTitle || '';
+    isQuiz = !!payload.isQuiz;
+    questionId = payload.questionId || '';
+    expectedOutput = payload.expectedOutput || '';
   }
 
   if (topicId) {
-    activeTutorialSource.value = { id: topicId, title: topicTitle || '对应教程' };
+    activeTutorialSource.value = {
+      id: topicId,
+      title: (topicTitle || '对应教程') + (isQuiz ? '（测验）' : ''),
+      isQuiz: isQuiz || undefined,
+      questionId: questionId || undefined,
+      expectedOutput: expectedOutput || undefined
+    };
     activeTutorialTopicId.value = topicId;
+  }
+  if (isQuiz && questionId) {
+    activeQuizPassed.value = getQuizQuestionResult(topicId, questionId) === 'pass';
+  } else {
+    activeQuizPassed.value = false;
   }
 
   activeNavTab.value = 'explorer';
@@ -603,6 +786,10 @@ const handleLoadTutorialCodeToEditor = (payload: { code: string; topicId: string
   } else {
     demoFile.content = code;
   }
+  // 本地工作区：首次（及每次）加载时把 tutorial_demo.py 落盘，保证重启后仍在工作区里
+  if (workspaceRootPath.value) {
+    nativeApi.writeFile(absPath(workspaceRootPath.value, '/tutorial_demo.py'), code).catch(() => {});
+  }
   // Sync content to already-open tab so editor shows latest code immediately
   const existingTab = openTabs.value.find((t) => t.fileId === demoFile.id);
   if (existingTab) {
@@ -614,12 +801,76 @@ const handleLoadTutorialCodeToEditor = (payload: { code: string; topicId: string
   showToast('已加载教程代码至编辑器');
 };
 
+const tutorialViewRef = ref<InstanceType<typeof TutorialView> | null>(null);
+
+// 「返回对应教程」FAB：总是回到对应小节的教程文章页（不打开测验）
 const handleReturnToTutorial = (topicId: string) => {
   activeNavTab.value = 'tutorial';
   if (topicId) {
     activeTutorialTopicId.value = topicId;
   } else {
     activeTutorialTopicId.value = safeStorage.getItem('pystudio_last_tutorial_topic') || 'p1_home';
+  }
+};
+
+// 「检查答案」FAB（已答对）：回到对应小节的测验界面
+const handleReturnToQuiz = (topicId: string) => {
+  activeNavTab.value = 'tutorial';
+  if (topicId) {
+    activeTutorialTopicId.value = topicId;
+  }
+  nextTick(() => {
+    tutorialViewRef.value?.openQuizExternally(activeTutorialTopicId.value);
+  });
+};
+
+const handleQuizSubmit = async () => {
+  const src = activeTutorialSource.value;
+  if (!src?.isQuiz) {
+    showToast('当前不是测验代码，无法提交');
+    return;
+  }
+  const activeTab = openTabs.value.find((t) => t.id === activeEditorTabId.value);
+  if (!activeTab) {
+    showToast('请先打开测验代码');
+    return;
+  }
+  const code = activeTab.content;
+  const stdoutParts: string[] = [];
+  const runResult = await pythonRunner.runCode(code, workspaceItems.value, (out) => {
+    consoleOutputs.value.push(out);
+    if (out.type === 'stdout') stdoutParts.push(out.text);
+  }, config.value.demoMode);
+  if (!runResult.success) {
+    showToast('运行出错，请查看终端中的错误信息');
+    return;
+  }
+  // 按“行序列”规范化比较：两种运行引擎（Pyodide / 演示模式）输出格式不同，
+  // 拆行、去空行、去首尾空格后逐行比对，不考察 \n 转义写法
+  const normalizeLines = (chunks: string[]): string[] => {
+    const lines: string[] = [];
+    for (const chunk of chunks) {
+      const parts = chunk.replace(/\r\n/g, '\n').split('\n');
+      for (const part of parts) {
+        const trimmed = part.trim();
+        if (trimmed.length > 0) lines.push(trimmed);
+      }
+    }
+    return lines;
+  };
+  const actualLines = normalizeLines(stdoutParts);
+  const expectedLines = normalizeLines([src.expectedOutput || '']);
+  const passed =
+    actualLines.length === expectedLines.length &&
+    actualLines.every((line, i) => line === expectedLines[i]);
+  activeQuizPassed.value = passed;
+  setQuizQuestionResult(src.id, src.questionId || '', passed ? 'pass' : 'fail');
+  if (passed) {
+    syncQuizCompletion(src.id);
+    showToast('测验通过，输出完全正确！');
+  } else {
+    const truncate = (v: string) => (v.length > 40 ? v.slice(0, 40) + '...' : v);
+    showToast('输出与预期不符：预期「' + truncate(expectedLines.join('\n')) + '」，实际「' + truncate(actualLines.join('\n')) + '」');
   }
 };
 
@@ -844,6 +1095,7 @@ onMounted(() => {
         :workspace-items="workspaceItems"
         :active-file-id="activeTabObject?.fileId || null"
         :collapsed="fileTreeCollapsed"
+        :workspace-root="workspaceRootPath"
         @select-file="handleSelectFile"
         @toggle-folder="handleToggleFolder"
         @create-file="handleCreateFile"
@@ -852,8 +1104,6 @@ onMounted(() => {
         @delete-item="requestDeleteItem"
         @run-file="handleRunFile"
         @download-file="handleDownloadFile"
-        @import-files="handleImportFiles"
-        @export-workspace="handleExportWorkspace"
         @toggle-collapse="fileTreeCollapsed = !fileTreeCollapsed"
         @contextmenu-filetree="(e, item) => openContextMenu(e, 'filetree', item)"
       />
@@ -870,6 +1120,10 @@ onMounted(() => {
           :workspace-files="workspaceItems"
           :console-outputs="consoleOutputs"
           :active-tutorial-source="activeTutorialSource"
+          :quiz-question-passed="activeQuizPassed"
+          :engine-label="engineLabel"
+          :initial-cursors="sessionCursors"
+          @cursor-change="handleCursorChange"
           @select-tab="handleSelectTab"
           @close-tab="handleCloseTab"
           @content-change="handleContentChange"
@@ -877,12 +1131,15 @@ onMounted(() => {
           @clear-console="consoleOutputs = []"
           @add-console-output="out => consoleOutputs.push(out)"
           @return-to-tutorial="handleReturnToTutorial"
+          @return-to-quiz="handleReturnToQuiz"
+          @quiz-submit="handleQuizSubmit"
           @contextmenu-editor="e => openContextMenu(e, 'editor')"
           @contextmenu-terminal="e => openContextMenu(e, 'terminal')"
         />
 
         <!-- Python Tutorial View -->
         <TutorialView
+          ref="tutorialViewRef"
           v-else-if="activeNavTab === 'tutorial'"
           :active-topic-id-prop="activeTutorialTopicId"
           @update-active-topic="id => { activeTutorialTopicId = id; safeStorage.setItem('pystudio_last_tutorial_topic', id); }"
@@ -934,22 +1191,6 @@ onMounted(() => {
                   </template>
                 </MD3ListItem>
 
-                <MD3ListItem>
-                  <template #leading>
-                    <span class="material-symbols-rounded">translate</span>
-                  </template>
-                  <template #headline>{{ t('language') }}</template>
-                  <template #supporting>{{ t('languageSubtitle') }}</template>
-                  <template #trailing>
-                    <MD3Tabs
-                      v-model="config.language"
-                      :options="[
-                        { value: 'zh', label: '中文' },
-                        { value: 'en', label: 'English' }
-                      ]"
-                    />
-                  </template>
-                </MD3ListItem>
               </MD3List>
             </MD3Card>
 
@@ -1023,6 +1264,17 @@ onMounted(() => {
                     />
                   </template>
                 </MD3ListItem>
+
+                <MD3ListItem>
+                  <template #leading>
+                    <span class="material-symbols-rounded">format_quote</span>
+                  </template>
+                  <template #headline>{{ t('autoPairQuotes') }}</template>
+                  <template #supporting>{{ t('autoPairQuotesSubtitle') }}</template>
+                  <template #trailing>
+                    <MD3Switch v-model="config.autoPairQuotes" />
+                  </template>
+                </MD3ListItem>
               </MD3List>
             </MD3Card>
                         <!-- About PyStudio -->
@@ -1038,7 +1290,7 @@ onMounted(() => {
                   <template #headline>{{ t('aboutApp') }}</template>
                   <template #supporting>{{ t('aboutAppDesc') }}</template>
                   <template #trailing>
-                    <span class="about-value">v0.2.1</span>
+                    <MD3Badge>v0.3.0</MD3Badge>
                   </template>
                 </MD3ListItem>
 
@@ -1059,12 +1311,6 @@ onMounted(() => {
                   </template>
                   <template #headline>{{ t('aiEngine') }}</template>
                   <template #supporting>{{ t('aiEngineDesc') }}</template>
-                  <template #trailing>
-                    <div class="gemini-badge">
-                      <span class="material-symbols-rounded-fill" style="font-size: 14px;">bolt</span>
-                      <span>vibe coding</span>
-                    </div>
-                  </template>
                 </MD3ListItem>
               </MD3List>
             </MD3Card>
@@ -1127,6 +1373,7 @@ onMounted(() => {
       @rename="item => handleRenameItem(item, item.name)"
       @delete="item => requestDeleteItem(item)"
       @run="item => handleRunFile(item)"
+      @reveal-in-explorer="handleRevealInExplorer"
     />
 
     <!-- Hidden file inputs for menu open file/folder -->
@@ -1262,22 +1509,6 @@ onMounted(() => {
   color: var(--secondary);
 }
 
-.about-value {
-  font-weight: 600;
-  color: var(--primary);
-}
-
-.gemini-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  background-color: var(--secondary-container);
-  color: var(--on-secondary-container);
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
 
 /* Top Menu Bar (File & Edit) */
 .app-top-menu-bar {

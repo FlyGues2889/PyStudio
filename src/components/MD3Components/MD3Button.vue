@@ -109,7 +109,7 @@ const handleClick = (e: MouseEvent) => {
   padding-right: 10px;
 }
 .size-S .button-icon {
-  font-size: 1.125rem; /* 18px */
+  font-size: var(--text-size-s);
 }
 
 .size-M {
@@ -125,7 +125,7 @@ const handleClick = (e: MouseEvent) => {
   padding-right: 14px;
 }
 .size-M .button-icon {
-  font-size: 1.25rem; /* 20px */
+  font-size: var(--text-size-m);
 }
 
 .size-L {
@@ -141,59 +141,60 @@ const handleClick = (e: MouseEvent) => {
   padding-right: 18px;
 }
 .size-L .button-icon {
-  font-size: 1.375rem; /* 22px */
+  font-size: var(--text-size-l);
 }
 
 /* Variants */
+/* 颜色全部使用 theme.css 定义的二级变量（浅色/深色各一套），不依赖任何 --md-sys-* */
 
 /* 1. Filled Button */
 .variant-filled {
-  background-color: var(--md-sys-color-primary, var(--primary, #6750a4));
-  color: var(--md-sys-color-on-primary, #ffffff);
+  background-color: var(--primary);
+  color: var(--on-primary);
 }
 .variant-filled:hover:not(:disabled) {
-  background-color: color-mix(in srgb, #ffffff 12%, var(--md-sys-color-primary, var(--primary, #6750a4)));
+  background-color: color-mix(in srgb, var(--on-primary) 12%, var(--primary));
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 .variant-filled:active:not(:disabled) {
-  background-color: color-mix(in srgb, #ffffff 20%, var(--md-sys-color-primary, var(--primary, #6750a4)));
+  background-color: color-mix(in srgb, var(--on-primary) 20%, var(--primary));
   box-shadow: none;
 }
 
 /* 2. Tonal Button */
 .variant-tonal {
-  background-color: var(--md-sys-color-secondary-container, var(--secondary-container, #e8def8));
-  color: var(--md-sys-color-on-secondary-container, var(--on-secondary-container, #1d192b));
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
 }
 .variant-tonal:hover:not(:disabled) {
-  background-color: color-mix(in srgb, var(--on-secondary-container, #1d192b) 10%, var(--secondary-container, #e8def8));
+  background-color: color-mix(in srgb, var(--on-secondary-container) 10%, var(--secondary-container));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .variant-tonal:active:not(:disabled) {
-  background-color: color-mix(in srgb, var(--on-secondary-container, #1d192b) 16%, var(--secondary-container, #e8def8));
+  background-color: color-mix(in srgb, var(--on-secondary-container) 16%, var(--secondary-container));
   box-shadow: none;
 }
 
 /* 3. Elevated Button */
 .variant-elevated {
-  background-color: var(--md-sys-color-surface-container-low, var(--surface, #f7f2fa));
-  color: var(--md-sys-color-primary, var(--primary, #6750a4));
+  background-color: var(--surface-container-low, var(--surface-color));
+  color: var(--primary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 .variant-elevated:hover:not(:disabled) {
-  background-color: color-mix(in srgb, var(--primary) 8%, var(--surface, #f7f2fa));
+  background-color: color-mix(in srgb, var(--primary) 8%, var(--surface-container-low, var(--surface-color)));
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
 }
 .variant-elevated:active:not(:disabled) {
-  background-color: color-mix(in srgb, var(--primary) 14%, var(--surface, #f7f2fa));
+  background-color: color-mix(in srgb, var(--primary) 14%, var(--surface-container-low, var(--surface-color)));
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 /* 4. Outlined Button */
 .variant-outlined {
   background-color: transparent;
-  border: 1px solid var(--md-sys-color-outline, var(--border-color, #79747e));
-  color: var(--md-sys-color-primary, var(--primary, #6750a4));
+  border: 1px solid var(--border-color);
+  color: var(--primary);
 }
 .variant-outlined:hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--primary) 8%, transparent);
@@ -206,7 +207,7 @@ const handleClick = (e: MouseEvent) => {
 /* 5. Text Button */
 .variant-text {
   background-color: transparent;
-  color: var(--md-sys-color-primary, var(--primary, #6750a4));
+  color: var(--primary);
   padding-left: 12px;
   padding-right: 12px;
 }
@@ -223,22 +224,51 @@ const handleClick = (e: MouseEvent) => {
   background-color: color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
-/* Color overrides */
+/* Color overrides：secondary / error 变体，均补齐 hover 与 active 状态 */
 .color-secondary.variant-filled {
-  background-color: var(--secondary, #625b71);
-  color: #ffffff;
+  background-color: var(--secondary);
+  color: var(--on-secondary);
 }
+.color-secondary.variant-filled:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--on-secondary) 12%, var(--secondary));
+}
+.color-secondary.variant-filled:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--on-secondary) 20%, var(--secondary));
+}
+
 .color-error.variant-filled {
-  background-color: var(--md-sys-color-error, #ba1a1a);
-  color: #ffffff;
+  background-color: var(--error);
+  color: var(--on-error);
 }
+.color-error.variant-filled:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--on-error) 12%, var(--error));
+}
+.color-error.variant-filled:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--on-error) 20%, var(--error));
+}
+
 .color-error.variant-tonal {
-  background-color: var(--md-sys-color-error-container, #ffdad6);
-  color: var(--md-sys-color-on-error-container, #410002);
+  background-color: var(--error-container);
+  color: var(--on-error-container);
 }
+.color-error.variant-tonal:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--on-error-container) 10%, var(--error-container));
+}
+.color-error.variant-tonal:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--on-error-container) 16%, var(--error-container));
+}
+
 .color-error.variant-text,
 .color-error.variant-outlined {
-  color: var(--md-sys-color-error, #ba1a1a);
+  color: var(--error);
+}
+.color-error.variant-text:hover:not(:disabled),
+.color-error.variant-outlined:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--error) 8%, transparent);
+}
+.color-error.variant-text:active:not(:disabled),
+.color-error.variant-outlined:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--error) 14%, transparent);
 }
 
 /* Disabled state */

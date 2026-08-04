@@ -22,6 +22,7 @@ const emit = defineEmits<{
   (e: 'new-file'): void;
   (e: 'new-folder'): void;
   (e: 'rename', item: FSItem): void;
+  (e: 'reveal-in-explorer', item: FSItem): void;
   (e: 'delete', item: FSItem): void;
   (e: 'run', item: FSItem): void;
 }>();
@@ -76,6 +77,7 @@ const handleAction = (action: string) => {
   else if (action === 'new-file') emit('new-file');
   else if (action === 'new-folder') emit('new-folder');
   else if (action === 'rename' && props.targetItem) emit('rename', props.targetItem);
+  else if (action === 'reveal-in-explorer' && props.targetItem) emit('reveal-in-explorer', props.targetItem);
   else if (action === 'delete' && props.targetItem) emit('delete', props.targetItem);
   else if (action === 'run' && props.targetItem) emit('run', props.targetItem);
 
@@ -193,6 +195,10 @@ onUnmounted(() => {
               <span class="material-symbols-rounded">edit</span>
               <span>{{ t('rename') }}</span>
             </button>
+            <button class="context-item-btn" @click="handleAction('reveal-in-explorer')">
+              <span class="material-symbols-rounded">folder_open</span>
+              <span>{{ t('openInExplorer') }}</span>
+            </button>
             <button class="context-item-btn delete-item" @click="handleAction('delete')">
               <span class="material-symbols-rounded">delete</span>
               <span>{{ t('delete') }}</span>
@@ -278,8 +284,8 @@ onUnmounted(() => {
 }
 
 .context-item-btn.delete-item:hover {
-  background-color: var(--md-sys-color-error);
-  color: var(--md-sys-color-on-error);
+  background-color: var(--error);
+  color: var(--on-error);
 }
 
 .context-item-btn.run-item {

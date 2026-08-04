@@ -101,7 +101,7 @@ defineEmits<{
 
 /* Checkmark Vue Transition styles */
 .check-icon-active {
-  font-size: 1.125rem; /* 18px */
+  font-size: var(--text-size-s);
   color: var(--bg-color); /* Match selected text color (surface / bg-color) */
   display: inline-flex;
   align-items: center;

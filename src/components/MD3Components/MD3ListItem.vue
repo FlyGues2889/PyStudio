@@ -63,11 +63,11 @@ withDefaults(defineProps<{
 }
 
 .m3-list-item-interactive:hover {
-  background-color: rgba(var(--md-sys-color-primary-rgb), 0.04);
+  background-color: rgba(var(--primary-rgb), 0.04);
 }
 
 .m3-list-item-interactive:active {
-  background-color: rgba(var(--md-sys-color-primary-rgb), 0.1);
+  background-color: rgba(var(--primary-rgb), 0.1);
 }
 
 .m3-list-item-leading {

@@ -56,7 +56,7 @@ const props = withDefaults(
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: var(--md-sys-color-inverse-on-surface);
+  background-color: var(--inverse-on-surface);
   border-radius: 12px 12px 0 0;
   padding: 1.5rem 1rem 0.5rem 1rem;
   transition: background-color var(--transition-fast, 0.2s);

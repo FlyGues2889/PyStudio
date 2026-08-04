@@ -1,22 +1,31 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
-import { type TutorialStage, type TutorialTopic } from './tutorialData';
-import { currentLanguage } from '../../utils/i18n';
-import { getLocalizedTutorialStages, tutorialUI } from '../../i18n/tutorialI18n';
+import { type TutorialStage, type TutorialTopic, getLocalizedTutorialStages, tutorialUI } from './tutorialData';
 import MD3Input from '../MD3Components/MD3Input.vue';
+import MD3FAB from '../MD3Components/MD3FAB.vue';
+import MD3IconButton from '../MD3Components/MD3IconButton.vue';
+import MD3Button from '../MD3Components/MD3Button.vue';
 
 const props = defineProps<{
   activeTopicId: string;
   collapsed?: boolean;
+  completedTopics?: Set<string>;
+  quizStats?: Record<string, { correct: number; total: number }>;
 }>();
 
 const emit = defineEmits<{
   (e: 'select-topic', topicId: string): void;
   (e: 'toggle-collapse'): void;
+  (e: 'toggle-quiz-directory'): void;
 }>();
 
-const ui = computed(() => tutorialUI[currentLanguage.value] || tutorialUI.zh);
-const stages = computed(() => getLocalizedTutorialStages(currentLanguage.value));
+const quizDone = (topicId: string): boolean => {
+  const stat = props.quizStats?.[topicId];
+  return !!stat && stat.total > 0 && stat.correct === stat.total;
+};
+
+const ui = tutorialUI;
+const stages = computed(() => getLocalizedTutorialStages());
 
 const searchQuery = ref('');
 
@@ -137,15 +146,10 @@ const filteredStages = computed(() => {
 <template>
   <div class="tutorial-tree-container" :class="{ 'is-collapsed': collapsed }">
     <!-- Collapse Toggle Button -->
-    <button
-      class="tree-collapse-toggle"
-      :title="collapsed ? ui.expandCatalog : ui.collapseCatalog"
-      @click="emit('toggle-collapse')"
-    >
-      <span class="material-symbols-rounded">
-        {{ collapsed ? 'arrow_menu_open' : 'arrow_menu_close' }}
-      </span>
-    </button>
+    <div class="tree-collapse-toggle" :title="collapsed ? ui.expandCatalog : ui.collapseCatalog">
+      <MD3IconButton variant="standard" size="S" :icon="collapsed ? 'arrow_menu_open' : 'arrow_menu_close'"
+        @click="emit('toggle-collapse')" />
+    </div>
 
     <div v-if="!collapsed" class="tree-content">
       <!-- Header -->
@@ -153,41 +157,28 @@ const filteredStages = computed(() => {
         <div class="tree-title-group">
           <span class="material-symbols-rounded header-icon">menu_book</span>
           <span class="tree-title">{{ ui.tutorialCatalog }}</span>
+          <MD3Button class="quiz-catalog-toggle" variant="text" size="S" icon="compare_arrows" title="切换测验目录"
+            @click="emit('toggle-quiz-directory')">
+            测验
+          </MD3Button>
         </div>
       </div>
 
       <!-- Search Input -->
       <div class="search-box">
-        <MD3Input
-          v-model="searchQuery"
-          icon="search"
-          :placeholder="ui.searchPlaceholder"
-        />
-        <button
-          v-if="searchQuery"
-          class="clear-search-btn"
-          @click="searchQuery = ''"
-        >
+        <MD3Input v-model="searchQuery" icon="search" :placeholder="ui.searchPlaceholder" />
+        <button v-if="searchQuery" class="clear-search-btn" @click="searchQuery = ''">
           <span class="material-symbols-rounded">close</span>
         </button>
       </div>
 
       <!-- Tree Items List -->
       <div class="tree-nodes-list custom-scrollbar">
-        <div
-          v-for="stage in filteredStages"
-          :key="stage.id"
-          class="stage-block"
-        >
+        <div v-for="stage in filteredStages" :key="stage.id" class="stage-block">
           <!-- Stage Header Folder -->
-          <div
-            class="stage-header-item"
-            @click="toggleStage(stage.id)"
-          >
-            <span
-              class="material-symbols-rounded folder-arrow"
-              :class="{ 'is-open': expandedStages[stage.id] || searchQuery }"
-            >
+          <div class="stage-header-item" @click="toggleStage(stage.id)">
+            <span class="material-symbols-rounded folder-arrow"
+              :class="{ 'is-open': expandedStages[stage.id] || searchQuery }">
               chevron_right
             </span>
             <span class="material-symbols-rounded-fill folder-icon">folder</span>
@@ -196,49 +187,32 @@ const filteredStages = computed(() => {
 
           <!-- Stage Level Topics -->
           <Transition name="expand">
-            <div
-              v-if="(expandedStages[stage.id] || searchQuery) && stage.topics"
-              class="topic-group"
-            >
-              <div
-                v-for="topic in stage.topics"
-                :key="topic.id"
-                class="topic-item"
-                :class="{ 'is-active': activeTopicId === topic.id }"
-                @click="emit('select-topic', topic.id)"
-              >
-                <span
-                  :class="[
-                    activeTopicId === topic.id ? 'material-symbols-rounded-fill' : 'material-symbols-rounded',
-                    'topic-icon'
-                  ]"
-                >
+            <div v-if="(expandedStages[stage.id] || searchQuery) && stage.topics" class="topic-group">
+              <div v-for="topic in stage.topics" :key="topic.id" class="topic-item"
+                :class="{ 'is-active': activeTopicId === topic.id }" @click="emit('select-topic', topic.id)">
+                <span :class="[
+                  activeTopicId === topic.id ? 'material-symbols-rounded-fill' : 'material-symbols-rounded',
+                  'topic-icon'
+                ]">
                   article
                 </span>
                 <span class="topic-title-text">{{ topic.title }}</span>
+                <span v-if="completedTopics?.has(topic.id)"
+                  class="material-symbols-rounded completed-check">check_circle</span>
+                <span v-if="quizStats?.[topic.id]?.total > 0" class="material-symbols-rounded quiz-state-icon"
+                  :class="{ 'is-done': quizDone(topic.id) }" :title="quizDone(topic.id) ? '测验已完成' : '测验未完成'">{{
+                    quizDone(topic.id) ? 'done_all' : 'quiz' }}</span>
               </div>
             </div>
           </Transition>
 
           <!-- Subcategories (e.g. Matplotlib) -->
           <Transition name="expand">
-            <div
-              v-if="(expandedStages[stage.id] || searchQuery) && stage.subcategories"
-              class="subcat-group"
-            >
-              <div
-                v-for="sub in stage.subcategories"
-                :key="sub.id"
-                class="subcat-block"
-              >
-                <div
-                  class="subcat-header-item"
-                  @click="toggleSub(sub.id)"
-                >
-                  <span
-                    class="material-symbols-rounded folder-arrow"
-                    :class="{ 'is-open': expandedSubs[sub.id] || searchQuery }"
-                  >
+            <div v-if="(expandedStages[stage.id] || searchQuery) && stage.subcategories" class="subcat-group">
+              <div v-for="sub in stage.subcategories" :key="sub.id" class="subcat-block">
+                <div class="subcat-header-item" @click="toggleSub(sub.id)">
+                  <span class="material-symbols-rounded folder-arrow"
+                    :class="{ 'is-open': expandedSubs[sub.id] || searchQuery }">
                     chevron_right
                   </span>
                   <span class="material-symbols-rounded-fill folder-icon">folder_special</span>
@@ -246,26 +220,21 @@ const filteredStages = computed(() => {
                 </div>
 
                 <Transition name="expand">
-                  <div
-                    v-if="(expandedSubs[sub.id] || searchQuery) && sub.topics"
-                    class="topic-group indented"
-                  >
-                    <div
-                      v-for="topic in sub.topics"
-                      :key="topic.id"
-                      class="topic-item"
-                      :class="{ 'is-active': activeTopicId === topic.id }"
-                      @click="emit('select-topic', topic.id)"
-                    >
-                      <span
-                        :class="[
-                          activeTopicId === topic.id ? 'material-symbols-rounded-fill' : 'material-symbols-rounded',
-                          'topic-icon'
-                        ]"
-                      >
+                  <div v-if="(expandedSubs[sub.id] || searchQuery) && sub.topics" class="topic-group indented">
+                    <div v-for="topic in sub.topics" :key="topic.id" class="topic-item"
+                      :class="{ 'is-active': activeTopicId === topic.id }" @click="emit('select-topic', topic.id)">
+                      <span :class="[
+                        activeTopicId === topic.id ? 'material-symbols-rounded-fill' : 'material-symbols-rounded',
+                        'topic-icon'
+                      ]">
                         article
                       </span>
                       <span class="topic-title-text">{{ topic.title }}</span>
+                      <span v-if="completedTopics?.has(topic.id)"
+                        class="material-symbols-rounded completed-check">check_circle</span>
+                      <span v-if="quizStats?.[topic.id]?.total > 0" class="material-symbols-rounded quiz-state-icon"
+                        :class="{ 'is-done': quizDone(topic.id) }" :title="quizDone(topic.id) ? '测验已完成' : '测验未完成'">{{
+                          quizDone(topic.id) ? 'done_all' : 'quiz' }}</span>
                     </div>
                   </div>
                 </Transition>
@@ -279,14 +248,8 @@ const filteredStages = computed(() => {
         </div>
       </div>
 
-      <!-- MD3 Small Floating Action Button (Locate current topic) -->
-      <button
-        class="fab-locate-btn"
-        title="定位当前课程在目录中的位置"
-        @click="scrollToActiveTopic"
-      >
-        <span class="material-symbols-rounded">my_location</span>
-      </button>
+      <!-- MD3 FAB: Locate current topic -->
+      <MD3FAB icon="my_location" title="定位当前课程在目录中的位置" size="S" @click="scrollToActiveTopic" />
     </div>
   </div>
 </template>
@@ -313,10 +276,10 @@ const filteredStages = computed(() => {
 
 .tree-collapse-toggle {
   position: absolute;
-  right: -32px;
+  right: -36px;
   top: 50%;
   transform: translateY(-50%);
-  width: 32px;
+  width: 36px;
   height: 36px;
   background-color: var(--surface-color);
   border: 1px solid var(--border-color-muted);
@@ -332,8 +295,19 @@ const filteredStages = computed(() => {
   transition: background-color 0.15s, color 0.15s;
 }
 
+.tree-collapse-toggle :deep(.m3-icon-button) {
+  margin: 0;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  color: inherit;
+}
+
 .tree-collapse-toggle:hover {
   background-color: var(--secondary-container);
+}
+
+.tree-collapse-toggle:hover :deep(.m3-icon-button) {
   color: var(--primary);
 }
 
@@ -354,6 +328,7 @@ const filteredStages = computed(() => {
 }
 
 .tree-title-group {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -524,7 +499,7 @@ const filteredStages = computed(() => {
   background-color: transparent;
   color: var(--text-color);
   font-weight: 600;
-  border: 1px solid var(--md-sys-color-secondary, var(--secondary, #625b71));
+  border: 1px solid var(--secondary);
   border-radius: 9999px;
 }
 
@@ -535,7 +510,7 @@ const filteredStages = computed(() => {
 }
 
 .topic-item.is-active .topic-icon {
-  color: var(--md-sys-color-secondary, var(--secondary, #625b71));
+  color: var(--secondary);
 }
 
 .topic-title-text {
@@ -553,33 +528,25 @@ const filteredStages = computed(() => {
   color: var(--text-tertiary);
 }
 
-.fab-locate-btn {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background-color: var(--secondary-container);
-  color: var(--on-secondary-container);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-  z-index: 10;
+
+.completed-check {
+  font-size: 0.875rem;
+  color: var(--primary);
+  flex-shrink: 0;
 }
 
-.fab-locate-btn:hover {
-  transform: translateY(-2px);
-  background-color: var(--secondary);
-  color: var(--on-secondary);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+.quiz-state-icon {
+  font-size: 0.9375rem;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
-.fab-locate-btn:active {
-  transform: scale(0.95);
+.quiz-state-icon.is-done {
+  color: var(--primary);
+}
+
+.quiz-catalog-toggle {
+  margin-left: auto;
+  color: var(--text-tertiary);
 }
 </style>

@@ -17,7 +17,7 @@ const emit = defineEmits<{
   (e: 'add-console-output', output: ConsoleOutput): void;
 }>();
 
-const { t, lang } = useI18n();
+const { t } = useI18n();
 const customPackageName = ref('');
 const filterQuery = ref('');
 const installingSet = ref<Set<string>>(new Set());
@@ -189,7 +189,7 @@ const handleUninstall = (pkgName: string) => {
                     {{ t('installedTag') }}
                   </span>
                 </div>
-                <p class="pkg-desc">{{ lang === 'en' ? pkg.descEn : pkg.descZh }}</p>
+                <p class="pkg-desc">{{ pkg.descZh }}</p>
               </div>
             </div>
 
@@ -225,7 +225,7 @@ const handleUninstall = (pkgName: string) => {
                     {{ t('availableTag') }}
                   </span>
                 </div>
-                <p class="pkg-desc">{{ lang === 'en' ? pkg.descEn : pkg.descZh }}</p>
+                <p class="pkg-desc">{{ pkg.descZh }}</p>
               </div>
             </div>
 
@@ -317,7 +317,7 @@ const handleUninstall = (pkgName: string) => {
 
 .pkg-list-item:hover {
   border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(var(--shadow-rgb), 0.06);
 }
 
 .pkg-list-item.is-installed {

@@ -1,33 +1,93 @@
-<script setup lang="ts">
-import { computed, ref, onMounted, watch, nextTick } from 'vue';
-import { type TutorialTopic } from './tutorialData';
-import { currentLanguage } from '../../utils/i18n';
-import { getLocalizedTutorialStages, tutorialUI } from '../../i18n/tutorialI18n';
+﻿<script setup lang="ts">
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { type TutorialTopic, getLocalizedTutorialStages, tutorialUI } from './tutorialData';
+import { getTopicQuiz } from './quizData';
 import { safeStorage } from '../../utils/storage';
 import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 import MD3Button from '../MD3Components/MD3Button.vue';
+import MD3IconButton from '../MD3Components/MD3IconButton.vue';
 import TutorialFormattedText from './TutorialFormattedText.vue';
+import MD3FAB from '../MD3Components/MD3FAB.vue';
 
 const props = defineProps<{
   topic: TutorialTopic;
+  isCompleted?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'select-topic', topicId: string): void;
   (e: 'load-code-to-editor', payload: { code: string; topicId: string; topicTitle: string }): void;
+  (e: 'toggle-completed'): void;
+  (e: 'open-quiz'): void;
   (e: 'contextmenu-tutorial', event: MouseEvent): void;
 }>();
 
 const contentViewRef = ref<HTMLElement | null>(null);
 const copiedCode = ref(false);
-const ui = computed(() => tutorialUI[currentLanguage.value] || tutorialUI.zh);
+const ui = tutorialUI;
+
+const hasQuiz = computed(() => !!getTopicQuiz(props.topic.id));
+
+const showBackToTop = ref(false);
+const activeTocIdx = ref(0);
+const tocCollapsed = ref(false);
+
+const readingTime = computed(() => {
+  const text = (props.topic.content.overview || '') +
+    props.topic.content.sections.map(s => (s.heading || '') + (s.text || '')).join('');
+  return Math.max(1, Math.ceil(text.length / 400));
+});
+
+const tocItems = computed(() => {
+  return props.topic.content.sections.map((s, idx) => ({
+    id: `section-${props.topic.id}-${idx}`,
+    title: s.heading,
+    idx
+  })).filter(s => s.title);
+});
+
+const currentProgress = computed(() => {
+  const total = allTopics.value.length;
+  const current = currentIndex.value + 1;
+  return total > 0 ? `${current} / ${total}` : '';
+});
+
+const scrollToSection = (idx: number) => {
+  const el = document.getElementById(`section-${props.topic.id}-${idx}`);
+  if (el && contentViewRef.value) {
+    const viewRect = contentViewRef.value.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const targetTop = contentViewRef.value.scrollTop + elRect.top - viewRect.top - 20;
+    contentViewRef.value.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+  }
+};
+
+const scrollToTop = () => {
+  contentViewRef.value?.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+const updateActiveToc = () => {
+  if (!contentViewRef.value) return;
+  const scrollTop = contentViewRef.value.scrollTop;
+  showBackToTop.value = scrollTop > 400;
+  const items = tocItems.value;
+  for (let i = items.length - 1; i >= 0; i--) {
+    const el = document.getElementById(items[i].id);
+    if (el && el.offsetTop <= scrollTop + 60) {
+      activeTocIdx.value = i;
+      return;
+    }
+  }
+  activeTocIdx.value = 0;
+};
 
 const handleScroll = (e: Event) => {
   const target = e.target as HTMLElement;
   if (target && props.topic?.id) {
     safeStorage.setItem(`pystudio_tutorial_scroll_${props.topic.id}`, target.scrollTop.toString());
   }
+  updateActiveToc();
 };
 
 const restoreOrResetScroll = (isTopicChanged: boolean) => {
@@ -65,7 +125,7 @@ const highlightPython = (code: string) => {
   }
 };
 
-const localizedStages = computed(() => getLocalizedTutorialStages(currentLanguage.value));
+const localizedStages = computed(() => getLocalizedTutorialStages());
 
 const allTopics = computed(() => {
   const topics: TutorialTopic[] = [];
@@ -127,12 +187,51 @@ const openInEditor = (code: string) => {
     @contextmenu.prevent="emit('contextmenu-tutorial', $event)"
   >
     <div class="content-wrapper">
+      <!-- TOC Sidebar -->
+      <aside v-if="tocItems.length > 0" class="toc-sidebar custom-scrollbar" :class="{ 'is-collapsed': tocCollapsed }">
+        <div class="toc-title">
+          <span v-if="!tocCollapsed">目录</span>
+          <MD3IconButton
+            class="toc-collapse-btn"
+            variant="standard"
+            size="S"
+            :icon="tocCollapsed ? 'menu' : 'menu_open'"
+            :title="tocCollapsed ? '展开目录' : '收起目录'"
+            @click="tocCollapsed = !tocCollapsed"
+          />
+        </div>
+        <ul v-if="!tocCollapsed" class="toc-list">
+          <li
+            v-for="item in tocItems"
+            :key="item.id"
+            :class="{ 'toc-active': activeTocIdx === item.idx }"
+            @click="scrollToSection(item.idx)"
+          >
+            {{ item.title }}
+          </li>
+        </ul>
+      </aside>
+
+      <div class="main-content">
       <!-- Stage Breadcrumb Tag -->
       <div class="breadcrumb-bar">
         <span class="material-symbols-rounded">school</span>
         <span class="stage-tag"><TutorialFormattedText :text="topic.stage" /></span>
         <span class="separator">/</span>
         <span class="topic-tag"><TutorialFormattedText :text="topic.title" /></span>
+      </div>
+
+      <!-- Meta Info Bar -->
+      <div class="meta-info-bar">
+        <span class="meta-item">
+          <span class="material-symbols-rounded" style="font-size:16px">schedule</span>
+          <span>{{ readingTime }} min read</span>
+        </span>
+        <span class="meta-separator">·</span>
+        <span class="meta-item">
+          <span class="material-symbols-rounded" style="font-size:16px">format_list_numbered</span>
+          <span>{{ currentProgress }}</span>
+        </span>
       </div>
 
       <!-- Main Article Header -->
@@ -178,6 +277,7 @@ const openInEditor = (code: string) => {
       <div
         v-for="(section, idx) in topic.content.sections"
         :key="idx"
+        :id="`section-${topic.id}-${idx}`"
         class="section-block"
       >
         <h2 class="section-heading"><TutorialFormattedText :text="section.heading" /></h2>
@@ -239,7 +339,40 @@ const openInEditor = (code: string) => {
         </ul>
       </div>
 
+      <!-- Key Takeaways -->
+      <div v-if="topic.content.takeaways && topic.content.takeaways.length > 0" class="takeaways-box">
+        <div class="takeaways-header">
+          <span class="material-symbols-rounded">psychology</span>
+          <span>核心要点</span>
+        </div>
+        <ul>
+          <li v-for="(item, i) in topic.content.takeaways" :key="i">
+            <TutorialFormattedText :text="item" />
+          </li>
+        </ul>
+      </div>
+
       <!-- Footer Navigation Buttons (Prev / Next) -->
+      <div class="completed-bar">
+        <button
+          class="completed-btn"
+          :class="{ 'is-completed': isCompleted }"
+          @click="emit('toggle-completed')"
+        >
+          <span class="material-symbols-rounded">{{ isCompleted ? 'check_circle' : 'radio_button_unchecked' }}</span>
+          <span>{{ isCompleted ? '已完成' : '标记为完成' }}</span>
+        </button>
+        <button
+          v-if="hasQuiz"
+          class="completed-btn quiz-btn"
+          title="完成本节测验"
+          @click="emit('open-quiz')"
+        >
+          <span class="material-symbols-rounded">fact_check</span>
+          <span>测验</span>
+        </button>
+      </div>
+
       <div class="tutorial-nav-footer">
         <button
           v-if="prevTopic"
@@ -267,8 +400,23 @@ const openInEditor = (code: string) => {
           <span class="material-symbols-rounded">arrow_forward</span>
         </button>
       </div>
+
+      <!-- Back to Top (MD3 FAB) -->
+      <MD3FAB
+        v-show="showBackToTop"
+        icon="arrow_upward"
+        title="回到顶部"
+        position="fixed"
+        bottom="24px"
+        right="24px"
+        size="M"
+        variant="secondary"
+        @click="scrollToTop"
+      >
+      </MD3FAB>
     </div>
   </div>
+</div>
 </template>
 
 <style scoped>
@@ -579,5 +727,196 @@ pre code {
 
 .md3-tutorial-table tr:hover td {
   background-color: var(--surface-variant);
+}
+
+/* --- TOC Sidebar --- */
+.content-wrapper {
+  display: flex;
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toc-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color-muted);
+  border-radius: 12px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.toc-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color-muted);
+}
+
+.toc-collapse-btn {
+  margin-left: auto;
+}
+
+.toc-sidebar.is-collapsed {
+  width: 48px;
+  padding: 8px;
+}
+
+.toc-sidebar.is-collapsed .toc-title {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+  justify-content: center;
+}
+
+.toc-sidebar.is-collapsed .toc-collapse-btn {
+  margin-left: 0;
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-list li {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+  line-height: 1.4;
+  margin-bottom: 2px;
+}
+
+.toc-list li:hover {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.toc-list li.toc-active {
+  background-color: var(--secondary-container);
+  color: var(--on-primary-container);
+  font-weight: 600;
+}
+
+/* --- Meta Info Bar --- */
+.meta-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 0.8125rem;
+  color: var(--text-tertiary);
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.meta-separator {
+  opacity: 0.5;
+}
+
+/* Responsive: hide TOC on narrow screens */
+@media (max-width: 1100px) {
+  .toc-sidebar {
+    display: none;
+  }
+}
+
+/* --- Completed Bar --- */
+.completed-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.completed-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  border: 2px solid var(--border-color-muted);
+  background-color: var(--surface-color);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.completed-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.completed-btn.quiz-btn {
+  border-color: var(--secondary);
+  color: var(--secondary);
+}
+
+.completed-btn.quiz-btn:hover {
+  background-color: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.completed-btn.is-completed {
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  border-color: var(--primary);
+}
+
+/* --- Takeaways Box --- */
+.takeaways-box {
+  background-color: var(--primary-container);
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 36px;
+}
+
+.takeaways-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--on-primary-container);
+  margin-bottom: 12px;
+}
+
+.takeaways-box ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.takeaways-box li {
+  font-size: 0.875rem;
+  color: var(--on-primary-container);
+  line-height: 1.6;
+  margin-bottom: 6px;
 }
 </style>

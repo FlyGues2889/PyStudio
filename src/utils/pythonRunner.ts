@@ -1,4 +1,5 @@
 import { ConsoleOutput, FSItem } from '../types';
+import { nativePython } from './nativePython';
 
 declare global {
   interface Window {
@@ -12,6 +13,9 @@ export class PythonRunnerService {
   private isLoading = false;
   private isReady = false;
   private demoScope: Record<string, any> = {};
+
+  // 当前原生工作区根目录（由 App 在打开本地文件夹时设置），用于给本机 Python 指定 cwd
+  public workspaceRoot: string | null = null;
 
   public async initPyodide(onOutput?: (out: ConsoleOutput) => void): Promise<boolean> {
     if (this.isReady) return true;
@@ -71,7 +75,7 @@ export class PythonRunnerService {
     return this.isReady;
   }
 
-  public syncFileSystem(items: FSItem[], basePath = '') {
+  public syncFileSystem(items: FSItem[], _basePath = '') {
     if (!this.pyodide) return;
     try {
       const fs = this.pyodide.FS;
@@ -104,6 +108,14 @@ export class PythonRunnerService {
     onOutput: (out: ConsoleOutput) => void,
     forceDemoMode = false
   ): Promise<{ success: boolean; durationMs: number }> {
+    // 渐进增强：Tauri 环境且本机有 Python 时，优先用真实子进程执行
+    if (!forceDemoMode && nativePython.supported) {
+      const det = await nativePython.detect();
+      if (det.available) {
+        return nativePython.runCode(code, workspaceFiles, onOutput, this.workspaceRoot);
+      }
+    }
+
     const startTime = performance.now();
 
     if (!forceDemoMode && !this.isReady && !this.isLoading) {
@@ -182,6 +194,13 @@ export class PythonRunnerService {
     onOutput: (out: ConsoleOutput) => void,
     forceDemoMode = false
   ): Promise<any> {
+    if (!forceDemoMode && nativePython.supported) {
+      const det = await nativePython.detect();
+      if (det.available) {
+        return nativePython.runREPL(statement, onOutput, this.workspaceRoot);
+      }
+    }
+
     onOutput({
       id: Math.random().toString(36).substring(2),
       type: 'input',
@@ -230,7 +249,7 @@ export class PythonRunnerService {
 
   private runDemoInterpreter(
     code: string,
-    workspaceFiles: FSItem[],
+    _workspaceFiles: FSItem[],
     onOutput: (out: ConsoleOutput) => void,
     startTime: number
   ): { success: boolean; durationMs: number } {
@@ -391,16 +410,21 @@ export class PythonRunnerService {
     expr = expr.trim();
     if (!expr) return '';
 
-    // Handle string literal
+    // Handle string literal (unescape \n \t \\ \' \" so demo output matches Pyodide)
     if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
-      return expr.substring(1, expr.length - 1);
+      return expr.substring(1, expr.length - 1).replace(/\\(['"\\\\nrt])/g, (_, ch) => {
+        switch (ch) { case 'n': return '\n'; case 't': return '\t'; case 'r': return '\r'; default: return ch; }
+      });
     }
 
     // Handle f-string
     if ((expr.startsWith('f"') && expr.endsWith('"')) || (expr.startsWith("f'") && expr.endsWith("'"))) {
       let raw = expr.substring(2, expr.length - 1);
-      return raw.replace(/\{([^}]+)\}/g, (_, sub) => {
+      let out = raw.replace(/\{([^}]+)\}/g, (_, sub) => {
         return String(this.evaluatePythonExpression(sub, scope));
+      });
+      return out.replace(/\\(['"\\\\nrt])/g, (_, ch) => {
+        switch (ch) { case 'n': return '\n'; case 't': return '\t'; case 'r': return '\r'; default: return ch; }
       });
     }
 
@@ -439,6 +463,13 @@ export class PythonRunnerService {
   }
 
   public async loadPackage(pkgName: string, onOutput?: (out: ConsoleOutput) => void, forceDemoMode = false): Promise<boolean> {
+    if (!forceDemoMode && nativePython.supported) {
+      const det = await nativePython.detect();
+      if (det.available && onOutput) {
+        return nativePython.loadPackage(pkgName, onOutput);
+      }
+    }
+
     if (!forceDemoMode && !this.isReady && !this.isLoading) {
       await this.initPyodide(onOutput);
     }
@@ -477,6 +508,13 @@ export class PythonRunnerService {
       timestamp: new Date().toLocaleTimeString()
     });
     return true;
+  }
+
+  // 停止当前运行的子进程（本机 Python 引擎可真正中断；Pyodide/演示模式为尽力而为）
+  public async stop(): Promise<void> {
+    if (nativePython.supported) {
+      await nativePython.stop();
+    }
   }
 }
 

@@ -111,7 +111,7 @@ const toggle = () => {
   /* Unselected (Inactive) Thumb */
   width: 16px;
   height: 16px;
-  background-color: var(--md-sys-color-outline);
+  background-color: var(--outline);
   transform: translate(6px, -50%);
 }
 
@@ -119,23 +119,23 @@ const toggle = () => {
   /* Selected (Active) Thumb */
   width: 24px;
   height: 24px;
-  background-color: var(--md-sys-color-on-primary);
+  background-color: var(--on-primary);
   transform: translate(22px, -50%);
 }
 
 /* Interaction effects */
 .m3-switch:hover:not(.disabled) .m3-switch-thumb {
-  background-color: var(--md-sys-color-on-surface-variant);
+  background-color: var(--on-surface-variant);
 }
 
 .m3-switch.selected:hover:not(.disabled) .m3-switch-thumb {
-  background-color: var(--md-sys-color-primary-container);
+  background-color: var(--primary-container);
 }
 
 .m3-switch-icon {
   width: 12px;
   height: 12px;
-  color: var(--md-sys-color-primary);
+  color: var(--primary);
 }
 
 @keyframes scale-in {

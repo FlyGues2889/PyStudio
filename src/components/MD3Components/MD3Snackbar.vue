@@ -112,8 +112,8 @@ onUnmounted(() => {
   align-items: flex-start;
   justify-content: center;
   gap: 8px;
-  background-color: var(--md-sys-color-inverse-surface, #323033);
-  color: var(--md-sys-color-inverse-on-surface, #f5eff4);
+  background-color: var(--inverse-surface, #323033);
+  color: var(--inverse-on-surface, #f5eff4);
   padding: 14px 16px;
   border-radius: 4px; /* M3 Spec: 4dp border radius */
   box-shadow: 0px 3px 5px -1px rgba(0, 0, 0, 0.2),
@@ -137,7 +137,7 @@ onUnmounted(() => {
 .m3-snackbar-action-btn {
   background: transparent !important;
   border: none !important;
-  color: var(--md-sys-color-primary-container, #d1e4ff) !important; /* Primary Container text color */
+  color: var(--primary-container, #d1e4ff) !important; /* Primary Container text color */
   font-family: var(--font-sans);
   font-size: 0.875rem;
   font-weight: 600;
@@ -152,11 +152,11 @@ onUnmounted(() => {
 }
 
 .m3-snackbar-action-btn:hover {
-  background-color: rgba(var(--md-sys-color-primary-container-rgb, 209, 228, 255), 0.1) !important;
+  background-color: rgba(var(--primary-container-rgb, 209, 228, 255), 0.1) !important;
 }
 
 .m3-snackbar-action-btn:active {
-  background-color: rgba(var(--md-sys-color-primary-container-rgb, 209, 228, 255), 0.2) !important;
+  background-color: rgba(var(--primary-container-rgb, 209, 228, 255), 0.2) !important;
 }
 
 .m3-snackbar-action-btn:disabled {

@@ -85,7 +85,7 @@ const handleClick = (e: MouseEvent) => {
   margin: 1px;
 }
 .size-SM .icon-glyph {
-  font-size: 1rem; /* 16px */
+  font-size: var(--text-size-sm);
 }
 
 .size-S {
@@ -94,7 +94,7 @@ const handleClick = (e: MouseEvent) => {
   min-width: 32px;
 }
 .size-S .icon-glyph {
-  font-size: 1.125rem; /* 18px */
+  font-size: var(--text-size-s);
 }
 
 .size-M {
@@ -103,7 +103,7 @@ const handleClick = (e: MouseEvent) => {
   min-width: 40px;
 }
 .size-M .icon-glyph {
-  font-size: 1.375rem; /* 22px */
+  font-size: var(--text-size-m);
 }
 
 .size-L {
@@ -112,7 +112,7 @@ const handleClick = (e: MouseEvent) => {
   min-width: 48px;
 }
 .size-L .icon-glyph {
-  font-size: 1.5rem; /* 24px */
+  font-size: var(--text-size-l);
 }
 
 /* Variants */
@@ -120,7 +120,7 @@ const handleClick = (e: MouseEvent) => {
 /* 1. Standard */
 .variant-standard {
   background-color: transparent;
-  color: var(--md-sys-color-on-surface-variant, var(--text-color, #49454f));
+  color: var(--on-surface-variant, var(--text-color, #49454f));
 }
 .variant-standard:hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--text-color, #49454f) 8%, transparent);
@@ -129,32 +129,32 @@ const handleClick = (e: MouseEvent) => {
   background-color: color-mix(in srgb, var(--text-color, #49454f) 14%, transparent);
 }
 .variant-standard.is-active {
-  background-color: var(--md-sys-color-secondary-container, var(--secondary-container, #e8def8));
-  color: var(--md-sys-color-on-secondary-container, var(--on-secondary-container, #1d192b));
+  background-color: var(--secondary-container, var(--secondary-container, #e8def8));
+  color: var(--on-secondary-container, var(--on-secondary-container, #1d192b));
 }
 
 /* 2. Filled */
 .variant-filled {
-  background-color: var(--md-sys-color-primary, var(--primary, #6750a4));
-  color: var(--md-sys-color-on-primary, #ffffff);
+  background-color: var(--primary, var(--primary, #6750a4));
+  color: var(--on-primary, #ffffff);
 }
 .variant-filled:hover:not(:disabled) {
-  background-color: color-mix(in srgb, #ffffff 12%, var(--md-sys-color-primary, var(--primary, #6750a4)));
+  background-color: color-mix(in srgb, #ffffff 12%, var(--primary, var(--primary, #6750a4)));
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 .variant-filled:active:not(:disabled) {
-  background-color: color-mix(in srgb, #ffffff 20%, var(--md-sys-color-primary, var(--primary, #6750a4)));
+  background-color: color-mix(in srgb, #ffffff 20%, var(--primary, var(--primary, #6750a4)));
   box-shadow: none;
 }
 .variant-filled.is-active {
-  background-color: var(--md-sys-color-primary-container, var(--primary-container, #eaddff));
-  color: var(--md-sys-color-on-primary-container, var(--on-primary-container, #21005d));
+  background-color: var(--primary-container, var(--primary-container, #eaddff));
+  color: var(--on-primary-container, var(--on-primary-container, #21005d));
 }
 
 /* 3. Tonal */
 .variant-tonal {
-  background-color: var(--md-sys-color-secondary-container, var(--secondary-container, #e8def8));
-  color: var(--md-sys-color-on-secondary-container, var(--on-secondary-container, #1d192b));
+  background-color: var(--secondary-container, var(--secondary-container, #e8def8));
+  color: var(--on-secondary-container, var(--on-secondary-container, #1d192b));
 }
 .variant-tonal:hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--on-secondary-container, #1d192b) 10%, var(--secondary-container, #e8def8));
@@ -168,8 +168,8 @@ const handleClick = (e: MouseEvent) => {
 /* 4. Outlined */
 .variant-outlined {
   background-color: transparent;
-  border: 1px solid var(--md-sys-color-outline, var(--border-color, #79747e));
-  color: var(--md-sys-color-on-surface-variant, var(--text-color, #49454f));
+  border: 1px solid var(--outline, var(--border-color, #79747e));
+  color: var(--on-surface-variant, var(--text-color, #49454f));
 }
 .variant-outlined:hover:not(:disabled) {
   background-color: color-mix(in srgb, var(--text-color, #49454f) 8%, transparent);
@@ -178,8 +178,8 @@ const handleClick = (e: MouseEvent) => {
   background-color: color-mix(in srgb, var(--text-color, #49454f) 14%, transparent);
 }
 .variant-outlined.is-active {
-  background-color: var(--md-sys-color-inverse-surface, #313033);
-  color: var(--md-sys-color-inverse-on-surface, #f4eff4);
+  background-color: var(--inverse-surface, #313033);
+  color: var(--inverse-on-surface, #f4eff4);
   border-color: transparent;
 }
 
@@ -188,15 +188,15 @@ const handleClick = (e: MouseEvent) => {
   color: var(--primary);
 }
 .color-error.variant-standard {
-  color: var(--md-sys-color-error, #ba1a1a);
+  color: var(--error, #ba1a1a);
 }
 .color-error.variant-filled {
-  background-color: var(--md-sys-color-error, #ba1a1a);
+  background-color: var(--error, #ba1a1a);
   color: #ffffff;
 }
 .color-error.variant-tonal {
-  background-color: var(--md-sys-color-error-container, #ffdad6);
-  color: var(--md-sys-color-on-error-container, #410002);
+  background-color: var(--error-container, #ffdad6);
+  color: var(--on-error-container, #410002);
 }
 
 /* Disabled state */

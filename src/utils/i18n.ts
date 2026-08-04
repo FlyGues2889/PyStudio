@@ -1,15 +1,3 @@
-﻿import { ref, computed } from 'vue';
-import { safeStorage } from './storage';
-
-export type Language = 'zh' | 'en';
-
-export const currentLanguage = ref<Language>('zh');
-
-export function setLanguage(lang: Language) {
-  currentLanguage.value = lang;
-  safeStorage.setItem('pystudio_lang', lang);
-}
-
 const translations = {
   zh: {
     // Navigation Sidebar
@@ -34,8 +22,8 @@ const translations = {
     editMenu: '编辑',
     newFile: '新建文件',
     newFolder: '新建文件夹',
-    openFile: '导入文件',
-    openFolder: '导入文件夹',
+    openFile: '打开文件',
+    openFolder: '打开文件夹',
     save: '保存',
     downloadFile: '导出文件到本地',
     copy: '复制',
@@ -66,13 +54,15 @@ const translations = {
     enableWheelZoomSubtitle: '开启后可在代码编辑器中按住 Ctrl 键滚动鼠标滚轮调整字号',
     tabSize: 'Tab 缩进空格数',
     tabSizeSubtitle: '按 Tab 键自动插入的空格数',
+    autoPairQuotes: '自动配对引号',
+    autoPairQuotesSubtitle: '输入引号时自动补全另一半；选中文本时自动用引号包裹',
 
     aboutTitle: '关于 PyStudio IDE',
     aboutApp: 'PyStudio Python IDE',
     aboutAppDesc: '基于浏览器 WASM 与 Pyodide 的本地 Python 集成开发环境',
     demoMode: '演示模式',
     demoModeSubtitle: '开启后使用轻量演示引擎，关闭则使用离线完整 Python WASM 引擎',
-    aiEngine: 'vibe coding',
+    aiEngine: '人工智能项目',
     aiEngineDesc: '与 AI 一起流畅编码，让创意自然流淌',
 
     // Code Editor & Tabs
@@ -99,7 +89,7 @@ const translations = {
     workspace: '工作区文件',
     newFileTooltip: '新建文件',
     newFolderTooltip: '新建文件夹',
-    importFilesTooltip: '导入文件',
+    importFilesTooltip: '打开文件',
     collapseTreeTooltip: '折叠文件树',
     expandTreeTooltip: '展开文件树',
     searchFiles: '搜索工作区文件...',
@@ -107,12 +97,11 @@ const translations = {
     fileNamePlaceholder: '文件名.py',
     noMatchingFiles: '暂无匹配文件',
     rename: '重命名',
+    openInExplorer: '在资源管理器中打开',
     delete: '删除',
     run: '运行',
     runScriptTooltip: '运行此脚本',
     downloadExport: '导出文件到本地',
-    exportWorkspace: '导出工作区到本地',
-    exportWorkspaceTooltip: '导出整个工作区到本地文件夹',
 
     // REPL Console
     replTitle: 'Python 3.11 交互式 REPL 终端',
@@ -151,167 +140,17 @@ const translations = {
     toastFolderCreated: '成功新建文件夹 "{name}"',
     toastRenamed: '成功重命名',
     toastExported: '文件 "{name}" 已导出下载',
-    toastImported: '已成功导入文件',
-    returnToTutorial: '回到对应教程',
+    toastImported: '已成功打开文件',
+    returnToTutorial: '返回对应教程',
     expandFileTree: '展开文件树',
     collapseFileTree: '收起文件树'
   },
-  en: {
-    // Navigation Sidebar
-    navEditor: 'Editor',
-    navTutorial: 'Tutorial',
-    navConsole: 'Interactive Console',
-    navPackages: 'Packages',
-    navSettings: 'Settings',
-    explorer: 'Editor',
-    tutorial: 'Tutorials',
-    console: 'Console',
-    packages: 'Packages',
-    settings: 'Settings',
-    expandSidebar: 'Expand Sidebar',
-    collapseSidebar: 'Collapse Sidebar',
-
-    // Title bar controls & menus
-    minimize: 'Minimize',
-    maximize: 'Maximize',
-    close: 'Close',
-    fileMenu: 'File',
-    editMenu: 'Edit',
-    newFile: 'New File',
-    newFolder: 'New Folder',
-    openFile: 'Import File',
-    openFolder: 'Import Folder',
-    save: 'Save',
-    downloadFile: 'Export File to Local',
-    copy: 'Copy',
-    cut: 'Cut',
-    paste: 'Paste',
-    find: 'Find',
-    replace: 'Replace',
-
-    // Settings View
-    settingsTitle: 'IDE Preferences',
-    settingsSubtitle: 'Customize PyStudio appearance, language and code editor configurations',
-    generalSettings: 'General Settings',
-    language: 'Language',
-    languageSubtitle: 'Select IDE system display language',
-    themeMode: 'Color Theme',
-    themeSubtitle: 'Switch between dark and light appearance modes',
-    themeModeSubtitle: 'Switch between dark and light appearance modes',
-    themeSystem: 'System',
-    themeLight: 'Light',
-    themeDark: 'Dark',
-
-    editorSettings: 'Editor Configuration',
-    codeTheme: 'Code Syntax Theme',
-    codeThemeSubtitle: 'Select code highlighting color scheme',
-    fontSize: 'Font Size',
-    fontSizeSubtitle: 'Adjust code editor font size (px)',
-    enableWheelZoom: 'Ctrl + Wheel Zoom',
-    enableWheelZoomSubtitle: 'Hold Ctrl and scroll mouse wheel in editor to adjust font size',
-    tabSize: 'Tab Indent Size',
-    tabSizeSubtitle: 'Number of spaces inserted per Tab key press',
-
-    aboutTitle: 'About PyStudio IDE',
-    aboutApp: 'PyStudio Python IDE',
-    aboutAppDesc: 'Local Python IDE powered by WebAssembly & Pyodide',
-    demoMode: 'Demo Mode',
-    demoModeSubtitle: 'Enable to use lightweight demo engine, disable for full offline Python WASM engine',
-    aiEngine: 'vibe coding',
-    aiEngineDesc: 'Flow-state coding with AI — let ideas flow naturally',
-
-    // Code Editor & Tabs
-    welcomeTitle: 'Welcome to PyStudio Python IDE',
-    welcomeSubtitle: 'Select a Python file from the left file tree or click New File above to start coding.',
-    shortcutSave: 'Save File',
-    shortcutRun: 'Run Script',
-    runCode: 'Run Code',
-    stopCode: 'Stop Code',
-    noOpenTabs: 'No files open',
-    terminalOutput: 'Terminal Output',
-    clearTerminal: 'Clear Terminal',
-    toggleTerminal: 'Toggle Terminal',
-    terminalPlaceholder: 'Click "Run Code" button to print output here...',
-    findPlaceholder: 'Find content...',
-    replacePlaceholder: 'Replace with...',
-    findNext: 'Next',
-    findPrev: 'Prev',
-    replaceBtn: 'Replace',
-    replaceAllBtn: 'Replace All',
-    noMatches: 'No matches',
-
-    // File Tree & Context Menu
-    workspace: 'Workspace Files',
-    newFileTooltip: 'New File',
-    newFolderTooltip: 'New Folder',
-    importFilesTooltip: 'Import Files',
-    collapseTreeTooltip: 'Collapse Tree',
-    expandTreeTooltip: 'Expand Tree',
-    searchFiles: 'Search workspace files...',
-    folderNamePlaceholder: 'Folder name...',
-    fileNamePlaceholder: 'Filename.py',
-    noMatchingFiles: 'No matching files',
-    rename: 'Rename',
-    delete: 'Delete',
-    run: 'Run',
-    runScriptTooltip: 'Run this script',
-    downloadExport: 'Export File to Local',
-    exportWorkspace: 'Export Workspace to Local',
-    exportWorkspaceTooltip: 'Export entire workspace to local folder',
-
-    // REPL Console
-    replTitle: 'Python 3.11 Interactive REPL Terminal',
-    clearTerminalTooltip: 'Clear console output history',
-    replPlaceholder: 'Type Python statement (e.g., print(2 ** 10) or import math)...',
-    execute: 'Execute',
-
-    // Package Manager
-    pkgTitle: 'Python Package Manager (Pyodide / PyPI)',
-    pkgSubtitle: 'Search and install pure Python & Pyodide wheels with one click',
-    pkgSearchPlaceholder: 'Enter PyPI / Pyodide package name (e.g., pillow)...',
-    installPkg: 'Install Package',
-    installing: 'Installing...',
-    installed: 'Installed',
-    available: 'Available',
-    ready: 'Ready',
-    loadPkg: 'Install Package',
-    installedTag: 'Installed',
-    availableTag: 'Available',
-    uninstall: 'Uninstall',
-    uninstallPkg: 'Uninstall',
-    installedSectionTitle: 'Installed Packages',
-    availableSectionTitle: 'Available Extension Packages',
-
-    // Dialogs & Toasts
-    confirmDeleteTitle: 'Confirm Delete',
-    confirmDeleteMsg: 'Are you sure you want to delete "{name}"? This action cannot be undone.',
-    unsavedChangesTitle: 'Unsaved Changes',
-    unsavedChangesMsg: 'File "{name}" has unsaved changes. Do you want to save before closing?',
-    dontSave: 'Don\'t Save',
-    cancel: 'Cancel',
-    confirm: 'Confirm',
-    toastFileSaved: 'Saved file "{name}"',
-    toastFileDeleted: 'Deleted "{name}"',
-    toastFileCreated: 'Created file "{name}"',
-    toastFolderCreated: 'Created folder "{name}"',
-    toastRenamed: 'Successfully renamed',
-    toastExported: 'File "{name}" exported',
-    toastImported: 'Successfully imported files',
-    returnToTutorial: 'Return to Tutorial',
-    expandFileTree: 'Expand File Tree',
-    collapseFileTree: 'Collapse File Tree'
-  }
 };
 
 export function t(key: keyof typeof translations['zh']): string {
-  const lang = currentLanguage.value;
-  return translations[lang]?.[key] || translations['zh'][key] || key;
+  return translations['zh'][key] || key;
 }
 
 export function useI18n() {
-  return {
-    lang: currentLanguage,
-    t: (key: keyof typeof translations['zh']) => t(key),
-    setLanguage
-  };
+  return { t };
 }

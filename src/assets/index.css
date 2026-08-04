@@ -30,18 +30,18 @@ input, textarea, [contenteditable="true"], [contenteditable] {
   /* Theme variables are loaded from theme.css and mapped there */
   
   /* Accent Colors (Light) mapped using MD3 Tertiary colors for harmonious palette */
-  --accent-indigo-bg: var(--md-sys-color-primary-container);
-  --accent-indigo-text: var(--md-sys-color-on-primary-container);
-  --accent-indigo-border: var(--md-sys-color-primary);
-  --accent-amber-bg: var(--md-sys-color-tertiary-container);
-  --accent-amber-text: var(--md-sys-color-on-tertiary-container);
-  --accent-amber-border: var(--md-sys-color-tertiary);
+  --accent-indigo-bg: var(--primary-container);
+  --accent-indigo-text: var(--on-primary-container);
+  --accent-indigo-border: var(--primary);
+  --accent-amber-bg: var(--tertiary-container);
+  --accent-amber-text: var(--on-tertiary-container);
+  --accent-amber-border: var(--tertiary);
   --accent-emerald-bg: #e8f5e9;
   --accent-emerald-text: #1b5e20;
   --accent-emerald-border: #2e7d32;
-  --accent-rose-bg: var(--md-sys-color-error-container);
-  --accent-rose-text: var(--md-sys-color-on-error-container);
-  --accent-rose-border: var(--md-sys-color-error);
+  --accent-rose-bg: var(--error-container);
+  --accent-rose-text: var(--on-error-container);
+  --accent-rose-border: var(--error);
 
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
@@ -51,18 +51,18 @@ input, textarea, [contenteditable="true"], [contenteditable] {
 /* --- Dark Theme Variables --- */
 :root.dark {
   /* Accent Colors (Dark) mapped using MD3 Tertiary colors for harmonious palette */
-  --accent-indigo-bg: var(--md-sys-color-primary-container);
-  --accent-indigo-text: var(--md-sys-color-on-primary-container);
-  --accent-indigo-border: var(--md-sys-color-primary);
-  --accent-amber-bg: var(--md-sys-color-tertiary-container);
-  --accent-amber-text: var(--md-sys-color-on-tertiary-container);
-  --accent-amber-border: var(--md-sys-color-tertiary);
+  --accent-indigo-bg: var(--primary-container);
+  --accent-indigo-text: var(--on-primary-container);
+  --accent-indigo-border: var(--primary);
+  --accent-amber-bg: var(--tertiary-container);
+  --accent-amber-text: var(--on-tertiary-container);
+  --accent-amber-border: var(--tertiary);
   --accent-emerald-bg: #1b5e20;
   --accent-emerald-text: #e8f5e9;
   --accent-emerald-border: #81c784;
-  --accent-rose-bg: var(--md-sys-color-error-container);
-  --accent-rose-text: var(--md-sys-color-on-error-container);
-  --accent-rose-border: var(--md-sys-color-error);
+  --accent-rose-bg: var(--error-container);
+  --accent-rose-text: var(--on-error-container);
+  --accent-rose-border: var(--error);
 }
 
 /* --- Global Styles --- */
@@ -118,14 +118,13 @@ input[type="reset"],
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--md-sys-color-surface-variant);
+  background: var(--surface-1);
   border-radius: 9999px;
-  opacity: 0.5;
   cursor: pointer;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--md-sys-color-surface-variant);
+  background: var(--surface-2);
   cursor: pointer;
 }
 
@@ -148,7 +147,7 @@ code, pre, kbd, samp { font-family: var(--font-mono) !important; }
   appearance: none;
   width: 100%;
   height: 6px;
-  background: var(--md-sys-color-surface-2);
+  background: var(--surface-2);
   border-radius: 9999px;
   outline: none;
   transition: background var(--transition-fast);
@@ -220,14 +219,14 @@ button:focus-visible,
 
 .material-symbols-rounded,
 .material-symbols-rounded-fill {
-  font-size: 18px !important;
+  font-size: 18px; /* 全局默认；MD3 组件按尺寸自行覆盖（如 FAB S/M/L 的图标字号） */
 }
 
 .material-symbols-rounded-fill {
   font-family: 'Material Symbols Rounded';
   font-weight: normal;
   font-style: normal;
-  font-size: 18px !important;
+  font-size: 18px;
   line-height: 1;
   letter-spacing: normal;
   text-transform: none;
@@ -242,9 +241,9 @@ button:focus-visible,
   font-variation-settings: 'FILL' 1;
 }
 
-/* Icon sizes inside buttons */
-button:not(.m3-nav-item):not(.win-btn):not(.action-btn):not(.delete-btn):not(.brand-icon-btn) .material-symbols-rounded,
-button:not(.m3-nav-item):not(.win-btn):not(.action-btn):not(.delete-btn):not(.brand-icon-btn) .material-symbols-rounded-fill,
+/* Icon sizes inside buttons（MD3 按钮组件各自控制尺寸，故排除在全局 18px 之外） */
+button:not(.m3-nav-item):not(.win-btn):not(.action-btn):not(.delete-btn):not(.brand-icon-btn):not(.m3-button):not(.md3-fab):not(.m3-icon-button):not(.m3-segment-btn):not(.m3-select-trigger) .material-symbols-rounded,
+button:not(.m3-nav-item):not(.win-btn):not(.action-btn):not(.delete-btn):not(.brand-icon-btn):not(.m3-button):not(.md3-fab):not(.m3-icon-button):not(.m3-segment-btn):not(.m3-select-trigger) .material-symbols-rounded-fill,
 .theme-btn .material-symbols-rounded,
 .theme-btn .material-symbols-rounded-fill,
 .nav-item-btn .material-symbols-rounded,

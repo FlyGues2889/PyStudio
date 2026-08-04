@@ -131,12 +131,12 @@ const handleCancel = () => {
 }
 
 .md3-dialog-icon {
-  font-size: 28px;
+  font-size: var(--text-size-l);
   color: var(--primary);
 }
 
 .md3-dialog-icon.is-danger {
-  color: var(--md-sys-color-error);
+  color: var(--error);
 }
 
 .md3-dialog-title {
@@ -197,7 +197,7 @@ const handleCancel = () => {
 
 .confirm-btn {
   background-color: var(--primary);
-  color: var(--md-sys-color-on-primary, #ffffff);
+  color: var(--on-primary, #ffffff);
 }
 
 .confirm-btn:hover {
@@ -205,12 +205,12 @@ const handleCancel = () => {
 }
 
 .confirm-btn.is-danger {
-  background-color: var(--md-sys-color-error);
-  color: var(--md-sys-color-on-error);
+  background-color: var(--error);
+  color: var(--on-error);
 }
 
 .confirm-btn.is-danger:hover {
-  background-color: var(--md-sys-color-error);
+  background-color: var(--error);
   opacity: 0.9;
 }
 

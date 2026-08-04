@@ -36,8 +36,8 @@ export interface AppConfig {
   autoSave: boolean;
   showLineNumbers: boolean;
   codeTheme?: string;
-  language?: 'zh' | 'en';
   enableWheelZoom?: boolean;
+  autoPairQuotes?: boolean;
   demoMode?: boolean;
 }
 

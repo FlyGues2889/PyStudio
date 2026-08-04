@@ -314,7 +314,7 @@ const cancelInline = () => {
   background-color: transparent;
   color: var(--text-color);
   font-weight: 600;
-  border: 1px solid var(--md-sys-color-secondary, var(--secondary, #625b71));
+  border: 1px solid var(--secondary, var(--secondary, #625b71));
   border-radius: 9999px;
 }
 
@@ -380,10 +380,9 @@ const cancelInline = () => {
   display: flex;
   align-items: center;
   gap: 2px;
-  background-color: var(--surface-color);
+  background-color: var(--bg-color);
   padding: 2px 4px;
   border-radius: 9999px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
   position: absolute;
   right: 6px;
 }

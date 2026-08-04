@@ -242,7 +242,7 @@ onUnmounted(() => {
 }
 
 .select-leading-icon {
-  font-size: 1.25rem;
+  font-size: var(--text-size-m);
   color: var(--primary);
   margin-right: 8px;
 }
@@ -260,7 +260,7 @@ onUnmounted(() => {
 }
 
 .select-trailing-icon {
-  font-size: 1.5rem;
+  font-size: var(--text-size-l);
   color: var(--text-secondary);
   transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
   margin-left: 8px;
@@ -324,7 +324,7 @@ onUnmounted(() => {
 }
 
 .m3-select-menu-floating .item-icon {
-  font-size: 1.25rem;
+  font-size: var(--text-size-m);
   color: var(--primary);
 }
 
@@ -362,7 +362,7 @@ onUnmounted(() => {
 }
 
 .m3-select-menu-floating .item-check-icon {
-  font-size: 1.25rem;
+  font-size: var(--text-size-m);
   color: var(--primary);
   font-weight: 700;
 }

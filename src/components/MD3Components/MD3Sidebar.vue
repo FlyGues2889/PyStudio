@@ -113,7 +113,7 @@ withDefaults(defineProps<Props>(), {
 }
 
 :deep(.brand-menu-icon) {
-  font-size: 1.5rem !important;
+  font-size: var(--text-size-l) !important;
 }
 
 :deep(.brand-info) {

@@ -210,7 +210,7 @@ const clearLogs = () => {
 
 .log-stderr,
 .log-error {
-  color: var(--md-sys-color-error);
+  color: var(--error);
 }
 
 .repl-input-bar {

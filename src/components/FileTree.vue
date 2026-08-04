@@ -5,11 +5,13 @@ import FileTreeNode from './FileTreeNode.vue';
 import { useI18n } from '../utils/i18n';
 import MD3Input from './MD3Components/MD3Input.vue';
 import MD3IconButton from './MD3Components/MD3IconButton.vue';
+import MD3Badge from './MD3Components/MD3Badge.vue';
 
 const props = defineProps<{
   workspaceItems: FSItem[];
   activeFileId: string | null;
   collapsed?: boolean;
+  workspaceRoot?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -22,14 +24,18 @@ const emit = defineEmits<{
   (e: 'run-file', item: FSItem): void;
   (e: 'download-file', item: FSItem): void;
   (e: 'toggle-collapse'): void;
-  (e: 'import-files', files: FileList): void;
-  (e: 'export-workspace'): void;
   (e: 'contextmenu-filetree', event: MouseEvent, item: FSItem | null): void;
 }>();
 
 const { t } = useI18n();
 const searchQuery = ref('');
-const fileInputRef = ref<HTMLInputElement | null>(null);
+
+// 原生本地工作区时，标题显示根目录名
+const rootName = computed(() => {
+  if (!props.workspaceRoot) return null;
+  const parts = props.workspaceRoot.split(/[\\/]/).filter(Boolean);
+  return parts[parts.length - 1] || props.workspaceRoot;
+});
 
 // Inline creation and rename state
 const creatingState = ref<{ parentId: string | null; isFolder: boolean } | null>(null);
@@ -121,18 +127,6 @@ const cancelInline = () => {
   rootNewName.value = '';
 };
 
-const triggerFileUpload = () => {
-  fileInputRef.value?.click();
-};
-
-const handleFileChange = (e: Event) => {
-  const target = e.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    emit('import-files', target.files);
-    target.value = '';
-  }
-};
-
 // Filtered tree logic
 const filteredItems = computed(() => {
   if (!searchQuery.value.trim()) return props.workspaceItems;
@@ -174,7 +168,8 @@ const filteredItems = computed(() => {
       <div class="tree-header">
         <div class="tree-title-group">
           <span class="material-symbols-rounded header-icon">folder</span>
-          <span class="tree-title">{{ t('workspace') }}</span>
+          <span class="tree-title">{{ rootName || t('workspace') }}</span>
+          <MD3Badge v-if="rootName" tone="secondary" title="本地磁盘工作区">本地</MD3Badge>
         </div>
 
         <div class="tree-header-actions">
@@ -194,31 +189,6 @@ const filteredItems = computed(() => {
             icon="create_new_folder"
             :title="t('newFolderTooltip')"
             @click="startCreateFolder(null)"
-          />
-
-          <!-- Upload File -->
-          <MD3IconButton
-            variant="standard"
-            size="SM"
-            icon="upload_file"
-            :title="t('importFilesTooltip')"
-            @click="triggerFileUpload"
-          />
-          <!-- Export Workspace -->
-          <MD3IconButton
-            variant="standard"
-            size="SM"
-            icon="drive_folder_upload"
-            :title="t('exportWorkspaceTooltip')"
-            @click="emit('export-workspace')"
-          />
-          <input
-            ref="fileInputRef"
-            type="file"
-            multiple
-            accept=".py,.json,.txt,.md,.csv"
-            style="display: none;"
-            @change="handleFileChange"
           />
         </div>
       </div>
@@ -375,6 +345,7 @@ const filteredItems = computed(() => {
   font-weight: 700;
   color: var(--text-color);
 }
+
 
 .tree-header-actions {
   display: flex;
