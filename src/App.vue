@@ -297,8 +297,8 @@ onMounted(async () => {
   }
 
   // 恢复/初始化工作区：
-  // - Tauri 环境：由 Rust 在应用数据目录确保 python_you_files 示例工作区存在（首次启动才写入），
-  //   再加载最近打开的工作区（或默认的 python_you_files）。
+  // - Tauri 环境：由 Rust 在应用数据目录确保 WorkSpace 示例工作区存在（首次启动才写入），
+  //   再加载最近打开的工作区（或默认的 WorkSpace）。
   // - 纯浏览器：恢复 localStorage 中的虚拟工作区。
   const loadVirtualWorkspace = () => {
     const savedWorkspace = safeStorage.getItem('python_you_workspace');

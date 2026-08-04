@@ -141,7 +141,7 @@ pub fn fs_delete(path: String) -> Result<(), String> {
     }
 }
 
-// 首次启动时由本命令创建空的 python_you_files/ 工作区文件夹（不写入任何示例文件）。
+// 首次启动时由本命令创建空的 WorkSpace/ 工作区文件夹（不写入任何示例文件）。
 // 便携布局：优先放在 exe 同级目录；若不可写则回退到应用数据目录。
 #[tauri::command]
 pub fn ensure_default_workspace(app: AppHandle) -> Result<String, String> {
@@ -149,13 +149,13 @@ pub fn ensure_default_workspace(app: AppHandle) -> Result<String, String> {
         app.path()
             .app_data_dir()
             .map_err(|e| e.to_string())
-            .map(|d| d.join("python_you_files"))
+            .map(|d| d.join("WorkSpace"))
     };
 
     let root: PathBuf = match std::env::current_exe() {
         Ok(exe) => match exe.parent() {
             Some(dir) => {
-                let candidate = dir.join("python_you_files");
+                let candidate = dir.join("WorkSpace");
                 match fs::create_dir_all(&candidate) {
                     Ok(_) => candidate,
                     Err(_) => app_data_root()?,
