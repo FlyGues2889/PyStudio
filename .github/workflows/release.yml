@@ -43,8 +43,8 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}".Replace('v', '')
-          $exePath = Join-Path $PWD "src-tauri/target/x86_64-pc-windows-msvc/release/pystudio.exe"
-          $destName = "PyStudio-green-$version-windows-x64.exe"
+          $exePath = Join-Path $PWD "src-tauri/target/x86_64-pc-windows-msvc/release/python-you.exe"
+          $destName = "Python-You-green-$version-windows-x64.exe"
           Copy-Item -Path $exePath -Destination $destName
           "EXE_PATH=$destName" | Out-File -FilePath $env:GITHUB_ENV -Append
 

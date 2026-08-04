@@ -212,7 +212,7 @@ print("1 到 100 累加加和结果:", total_sum)`,
           {
             heading: '基础输入与类型转换',
             text: 'input() 永远返回字符串，获取数字必须手动强转。\n非合法输入强转会抛出 ValueError，需要用 try-except 捕获处理。',
-            code: `# 模拟控制台输入（PyStudio 环境演示）
+            code: `# 模拟控制台输入（Python You 环境演示）
 raw_value = "25"
 try:
     age = int(raw_value)
@@ -263,7 +263,7 @@ for guess_str in ["50", "abc", "75"]:
 float_numbers = [float(x.strip()) for x in mock_input.split(",") if x.strip()]
 print("解析浮点数据列表:", float_numbers)`,
         tips: [
-          '在 PyStudio 交互终端中，命令行支持实时模拟用户输入的交互操作。',
+          '在 Python You 交互终端中，命令行支持实时模拟用户输入的交互操作。',
           '处理用户输入一定要加异常校验，不要假设用户会按要求输入。'
         ]
       }

@@ -23,7 +23,7 @@ export const stage6: TutorialStage = {
                 heading: 'Matplotlib 核心优势',
                 text: '1. 图表类型丰富：支持折线图、散点图、柱状图、饼图、直方图、等高线图、3D 图等几十种图表\n2. 精细可控：可针对标题、坐标轴、图例、网格、颜色进行像素级微调\n3. 生态兼容：天然适配 NumPy 数组与 Pandas DataFrame 数据源',
                 code: `# Figure 与 Axes 面向对象初始化\nimport matplotlib.pyplot as plt\nfig, ax = plt.subplots()\nprint("创建 Figure 画布与 Axes 坐标系:", type(fig), type(ax))`,
-                notes: '说明：在 PyStudio 中可快速生成各种科学图表并导出图像数据。'
+                notes: '说明：在 Python You 中可快速生成各种科学图表并导出图像数据。'
               },
               {
                 heading: '四层架构模型',

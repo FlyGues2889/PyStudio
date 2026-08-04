@@ -185,7 +185,7 @@ const loadWorkspaceFromDisk = async (root: string) => {
     activeEditorTabId.value = null;
     workspaceRootPath.value = root;
     pythonRunner.workspaceRoot = root;
-    safeStorage.setItem('pystudio_workspace_root', root);
+    safeStorage.setItem('python_you_workspace_root', root);
 
     const mainFile = findFileByPath(workspaceItems.value, '/main.py');
     if (mainFile) openFileInTab(mainFile);
@@ -203,7 +203,7 @@ const handleFileInputChange = (e: Event) => {
 
 // App Initialization State
 const isInitializing = ref(true);
-const loadingStatus = ref('正在启动 PyStudio…');
+const loadingStatus = ref('正在启动 Python You…');
 
 // Navigation State
 const activeNavTab = ref<'explorer' | 'tutorial' | 'console' | 'packages' | 'settings'>('explorer');
@@ -244,7 +244,7 @@ const workspaceRootPath = ref<string | null>(null);
 const engineLabel = computed(() => nativePython.statusLabel.value);
 
 // ---- 会话恢复：上次关闭时打开的标签页 + 光标位置 ----
-const SESSION_KEY = 'pystudio_session';
+const SESSION_KEY = 'python_you_session';
 const sessionCursors = ref<Record<string, { line: number; col: number }>>({});
 
 const saveSession = () => {
@@ -297,11 +297,11 @@ onMounted(async () => {
   }
 
   // 恢复/初始化工作区：
-  // - Tauri 环境：由 Rust 在应用数据目录确保 pystudio_files 示例工作区存在（首次启动才写入），
-  //   再加载最近打开的工作区（或默认的 pystudio_files）。
+  // - Tauri 环境：由 Rust 在应用数据目录确保 python_you_files 示例工作区存在（首次启动才写入），
+  //   再加载最近打开的工作区（或默认的 python_you_files）。
   // - 纯浏览器：恢复 localStorage 中的虚拟工作区。
   const loadVirtualWorkspace = () => {
-    const savedWorkspace = safeStorage.getItem('pystudio_workspace');
+    const savedWorkspace = safeStorage.getItem('python_you_workspace');
     if (savedWorkspace) {
       try {
         workspaceItems.value = JSON.parse(savedWorkspace);
@@ -311,7 +311,7 @@ onMounted(async () => {
     workspaceItems.value = DEFAULT_WORKSPACE_ITEMS;
   };
 
-  const savedRoot = safeStorage.getItem('pystudio_workspace_root');
+  const savedRoot = safeStorage.getItem('python_you_workspace_root');
   if (nativeApi.available()) {
     try {
       loadingStatus.value = '正在创建本地工作区文件夹…';
@@ -323,7 +323,7 @@ onMounted(async () => {
       workspaceItems.value = fsEntriesToFSItems(entries);
       workspaceRootPath.value = root;
       pythonRunner.workspaceRoot = root;
-      safeStorage.setItem('pystudio_workspace_root', root);
+      safeStorage.setItem('python_you_workspace_root', root);
     } catch (e) {
       // 磁盘工作区不可用，退回虚拟工作区
       loadVirtualWorkspace();
@@ -332,7 +332,7 @@ onMounted(async () => {
     loadVirtualWorkspace();
   }
 
-  const savedConfig = safeStorage.getItem('pystudio_config');
+  const savedConfig = safeStorage.getItem('python_you_config');
   if (savedConfig) {
     try {
       config.value = { ...config.value, ...JSON.parse(savedConfig) };
@@ -360,7 +360,7 @@ onMounted(async () => {
   consoleOutputs.value.push({
     id: Math.random().toString(36).substring(2),
     type: 'system',
-    text: '[INFO] PyStudio Presentation Engine Ready (Demo Mode Active)',
+    text: '[INFO] Python You Presentation Engine Ready (Demo Mode Active)',
     timestamp: new Date().toLocaleTimeString()
   });
   isInitializing.value = false;
@@ -368,11 +368,11 @@ onMounted(async () => {
 
 // Sync Workspace to LocalStorage
 watch(workspaceItems, (newVal) => {
-  safeStorage.setItem('pystudio_workspace', JSON.stringify(newVal));
+  safeStorage.setItem('python_you_workspace', JSON.stringify(newVal));
 }, { deep: true });
 
 watch(config, (newVal) => {
-  safeStorage.setItem('pystudio_config', JSON.stringify(newVal));
+  safeStorage.setItem('python_you_config', JSON.stringify(newVal));
   updateTheme();
 }, { deep: true });
 
@@ -735,7 +735,7 @@ function rebaseChildrenPaths(item: FSItem, oldPrefix: string, newPrefix: string)
 }
 
 const activeTutorialSource = ref<{ id: string; title: string; isQuiz?: boolean; questionId?: string; expectedOutput?: string } | null>(null);
-const activeTutorialTopicId = ref<string>(safeStorage.getItem('pystudio_last_tutorial_topic') || 'p1_home');
+const activeTutorialTopicId = ref<string>(safeStorage.getItem('python_you_last_tutorial_topic') || 'p1_home');
 const activeQuizPassed = ref(false);
 
 // Load tutorial code to editor
@@ -813,7 +813,7 @@ const handleReturnToTutorial = (topicId: string) => {
   if (topicId) {
     activeTutorialTopicId.value = topicId;
   } else {
-    activeTutorialTopicId.value = safeStorage.getItem('pystudio_last_tutorial_topic') || 'p1_home';
+    activeTutorialTopicId.value = safeStorage.getItem('python_you_last_tutorial_topic') || 'p1_home';
   }
 };
 
@@ -887,7 +887,7 @@ const currentFileName = computed(() => {
   if (activeNavTab.value === 'console') return '交互式终端';
   if (activeNavTab.value === 'packages') return '包管理器';
   if (activeNavTab.value === 'settings') return 'IDE 设置';
-  return activeTabObject.value ? activeTabObject.value.name : 'PyStudio';
+  return activeTabObject.value ? activeTabObject.value.name : 'Python You';
 });
 
 onMounted(() => {
@@ -913,7 +913,7 @@ onMounted(() => {
               @click="sidebarExpanded = !sidebarExpanded"
             />
             <div v-if="sidebarExpanded" class="brand-info">
-              <h1 class="brand-title" style="color: var(--primary);">PyStudio</h1>
+              <h1 class="brand-title" style="color: var(--primary);">Python You</h1>
             </div>
           </div>
         </div>
@@ -1060,7 +1060,7 @@ onMounted(() => {
           </div>
         </div>
         <div v-else class="title-bar-brand">
-          <span class="title-text">PyStudio IDE</span>
+          <span class="title-text">Python You</span>
         </div>
         <div class="windows-controls">
           <MD3IconButton
@@ -1146,7 +1146,7 @@ onMounted(() => {
           ref="tutorialViewRef"
           v-else-if="activeNavTab === 'tutorial'"
           :active-topic-id-prop="activeTutorialTopicId"
-          @update-active-topic="id => { activeTutorialTopicId = id; safeStorage.setItem('pystudio_last_tutorial_topic', id); }"
+          @update-active-topic="id => { activeTutorialTopicId = id; safeStorage.setItem('python_you_last_tutorial_topic', id); }"
           @load-code-to-editor="handleLoadTutorialCodeToEditor"
           @contextmenu-tutorial="e => openContextMenu(e, 'tutorial')"
         />
@@ -1281,7 +1281,7 @@ onMounted(() => {
                 </MD3ListItem>
               </MD3List>
             </MD3Card>
-                        <!-- About PyStudio -->
+                        <!-- About Python You -->
             <MD3Card variant="outlined" class="settings-card full-width">
               <div class="settings-card-header">
                 <h4 class="settings-card-title">{{ t('aboutTitle') }}</h4>

@@ -18,11 +18,11 @@ const emit = defineEmits<{
   (e: 'update-active-topic', topicId: string): void;
 }>();
 
-const savedTopicId = safeStorage.getItem('pystudio_last_tutorial_topic');
+const savedTopicId = safeStorage.getItem('python_you_last_tutorial_topic');
 const activeTopicId = ref(props.activeTopicIdProp || savedTopicId || 'p1_home');
 const isTreeCollapsed = ref(false);
 
-const COMPLETED_KEY = 'pystudio_completed_topics';
+const COMPLETED_KEY = 'python_you_completed_topics';
 const completedTopics = ref<Set<string>>(new Set());
 
 const loadCompleted = () => {
@@ -61,7 +61,7 @@ defineExpose({ openQuizExternally });
 
 watch(activeTopicId, (newTopicId) => {
   if (newTopicId) {
-    safeStorage.setItem('pystudio_last_tutorial_topic', newTopicId);
+    safeStorage.setItem('python_you_last_tutorial_topic', newTopicId);
   }
 });
 
@@ -116,7 +116,7 @@ const handleSelectTopic = (topicId: string) => {
   activeTopicId.value = topicId;
   viewMode.value = 'article';
   isTreeCollapsed.value = false;
-  safeStorage.setItem('pystudio_last_tutorial_topic', topicId);
+  safeStorage.setItem('python_you_last_tutorial_topic', topicId);
   emit('update-active-topic', topicId);
 };
 

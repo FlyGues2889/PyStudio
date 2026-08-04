@@ -1,4 +1,4 @@
-// 本地真实文件系统命令：让 PyStudio 可以直接读写磁盘上的工作区
+// 本地真实文件系统命令：让 Python You 可以直接读写磁盘上的工作区
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -141,7 +141,7 @@ pub fn fs_delete(path: String) -> Result<(), String> {
     }
 }
 
-// 首次启动时由本命令创建空的 pystudio_files/ 工作区文件夹（不写入任何示例文件）。
+// 首次启动时由本命令创建空的 python_you_files/ 工作区文件夹（不写入任何示例文件）。
 // 便携布局：优先放在 exe 同级目录；若不可写则回退到应用数据目录。
 #[tauri::command]
 pub fn ensure_default_workspace(app: AppHandle) -> Result<String, String> {
@@ -149,13 +149,13 @@ pub fn ensure_default_workspace(app: AppHandle) -> Result<String, String> {
         app.path()
             .app_data_dir()
             .map_err(|e| e.to_string())
-            .map(|d| d.join("pystudio_files"))
+            .map(|d| d.join("python_you_files"))
     };
 
     let root: PathBuf = match std::env::current_exe() {
         Ok(exe) => match exe.parent() {
             Some(dir) => {
-                let candidate = dir.join("pystudio_files");
+                let candidate = dir.join("python_you_files");
                 match fs::create_dir_all(&candidate) {
                     Ok(_) => candidate,
                     Err(_) => app_data_root()?,
@@ -177,7 +177,7 @@ pub fn fs_materialize_workspace(items: Vec<ImportItem>) -> Result<String, String
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_nanos())
         .unwrap_or(0);
-    let base = std::env::temp_dir().join(format!("pystudio_ws_{}_{}", std::process::id(), nanos));
+    let base = std::env::temp_dir().join(format!("python_you_ws_{}_{}", std::process::id(), nanos));
     for item in &items {
         let rel = item.path.trim_start_matches('/');
         let target = base.join(rel);

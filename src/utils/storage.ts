@@ -32,7 +32,7 @@ class MemoryStorage implements Storage {
 function getStorage(): Storage {
   try {
     if (typeof window !== 'undefined' && window.localStorage) {
-      const testKey = '__pystudio_storage_test__';
+      const testKey = '__python_you_storage_test__';
       window.localStorage.setItem(testKey, testKey);
       window.localStorage.removeItem(testKey);
       return window.localStorage;

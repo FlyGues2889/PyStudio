@@ -86,7 +86,7 @@ export const cmdHelp: TutorialStage = {
             text: 'python -m http.server 开网页服务器；python -m pip 管理第三方包；python -m json.tool 格式化 JSON；python -m venv 创建虚拟环境。'
           }
         ],
-        codeExample: `import json\nraw_data = '{"name": "PyStudio", "type": "IDE"}'\nformatted = json.dumps(json.loads(raw_data), indent=2)\nprint("json.tool 格式化效果展示:\\n", formatted)`,
+        codeExample: `import json\nraw_data = '{"name": "Python You", "type": "IDE"}'\nformatted = json.dumps(json.loads(raw_data), indent=2)\nprint("json.tool 格式化效果展示:\\n", formatted)`,
         tips: [
           '`python -m http.server` 在前端开发与内网文件临时共享场景中极具生产效率。'
         ]

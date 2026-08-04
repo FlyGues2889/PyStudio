@@ -1,7 +1,7 @@
 import { FSItem } from '../types';
 import { safeStorage } from './storage';
 
-const STORAGE_KEY = 'pystudio_installed_packages';
+const STORAGE_KEY = 'python_you_installed_packages';
 
 const STDLIB_MODULES = new Set([
   'sys', 'os', 'math', 'random', 'time', 'datetime', 'json', 're', 'string',

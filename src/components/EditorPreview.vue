@@ -7,7 +7,7 @@ const props = defineProps<{
   config: AppConfig;
 }>();
 
-const sampleCode = `# PyStudio 实时编辑器配置预览
+const sampleCode = `# Python You 实时编辑器配置预览
 def calculate_factorial(n: int) -> int:
     """计算非负整数的阶乘示例"""
     if n <= 1:

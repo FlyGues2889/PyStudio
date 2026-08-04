@@ -85,7 +85,7 @@ const updateActiveToc = () => {
 const handleScroll = (e: Event) => {
   const target = e.target as HTMLElement;
   if (target && props.topic?.id) {
-    safeStorage.setItem(`pystudio_tutorial_scroll_${props.topic.id}`, target.scrollTop.toString());
+    safeStorage.setItem(`python_you_tutorial_scroll_${props.topic.id}`, target.scrollTop.toString());
   }
   updateActiveToc();
 };
@@ -96,7 +96,7 @@ const restoreOrResetScroll = (isTopicChanged: boolean) => {
     if (isTopicChanged) {
       contentViewRef.value.scrollTop = 0;
     } else {
-      const saved = safeStorage.getItem(`pystudio_tutorial_scroll_${props.topic?.id}`);
+      const saved = safeStorage.getItem(`python_you_tutorial_scroll_${props.topic?.id}`);
       if (saved !== null) {
         contentViewRef.value.scrollTop = parseFloat(saved) || 0;
       } else {

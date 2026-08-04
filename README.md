@@ -1,8 +1,8 @@
-# PyStudio - 轻量级 Python IDE & 交互式学习平台
+# Python You - 轻量级 Python IDE & 交互式学习平台
 
 > **AI 项目提示** &nbsp;  人工智能参与了项目的开发。
 
-**PyStudio** 是一款基于 WebAssembly (Pyodide) 与 Material You 设计风格打造的轻量级桌面端 Python 集成开发环境与交互式教学平台。
+**Python You** 是一款基于 WebAssembly (Pyodide) 与 Material You 设计风格打造的轻量级桌面端 Python 集成开发环境与交互式教学平台。
 
 无需安装任何本地 Python 环境或复杂依赖就可拥有完整的 Python 3.11 运行环境，并支持文件管理、包管理、交互式 REPL 终端；每个教程小节还配有课后测验，帮助你随时检验学习成果。
 

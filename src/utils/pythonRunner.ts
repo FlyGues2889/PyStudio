@@ -256,7 +256,7 @@ export class PythonRunnerService {
     onOutput({
       id: Math.random().toString(36).substring(2),
       type: 'info',
-      text: '[INFO] Running in PyStudio Presentation Demo Mode...',
+      text: '[INFO] Running in Python You Presentation Demo Mode...',
       timestamp: new Date().toLocaleTimeString()
     });
 

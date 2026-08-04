@@ -40,7 +40,7 @@ export const stage1: TutorialStage = {
             text: 'Python 是一门好读、好写的编程语言，不需要安装复杂软件；接下来会按「基础语法、数据结构、控制流、函数」的顺序循序渐进。'
           }
         ],
-        codeExample: `# Python 3.11 环境测试\nimport sys\n\nprint(f"PyStudio 解释器环境: Python {sys.version.split()[0]}")\nprint("核心系统就绪，欢迎开启 Python 编程学习。")\nprint("你可以直接修改代码，点击运行查看效果！")`,
+        codeExample: `# Python 3.11 环境测试\nimport sys\n\nprint(f"Python You 解释器环境: Python {sys.version.split()[0]}")\nprint("核心系统就绪，欢迎开启 Python 编程学习。")\nprint("你可以直接修改代码，点击运行查看效果！")`,
         takeaways: [
           'Python 是解释型、面向对象的高级语言，语法友好，非常适合新手入门',
           '拥有超 30 万个第三方库，生态丰富，覆盖几乎所有开发领域',
@@ -99,11 +99,11 @@ export const stage1: TutorialStage = {
       id: 'p1_setup',
       title: 'Python 入门',
       stage: 'Python 教程',
-      summary: '在 PyStudio 里写第一个 Python 程序，理解程序是怎么运行的。',
+      summary: '在 Python You 里写第一个 Python 程序，理解程序是怎么运行的。',
       content: {
-        overview: '在 PyStudio 里写 Python 不用安装任何东西：内置的解释器会把你的代码「翻译」成计算机能听懂的话并立刻执行。这一课我们就来写第一个程序，亲眼看看代码变成结果的过程。',
+        overview: '在 Python You 里写 Python 不用安装任何东西：内置的解释器会把你的代码「翻译」成计算机能听懂的话并立刻执行。这一课我们就来写第一个程序，亲眼看看代码变成结果的过程。',
         sections: [
-          { heading: '生活小例子', text: '就像用翻译软件：你输入中文，它翻译成外语。在 PyStudio 里，你输入 Python 代码，解释器负责把它翻译成「计算机语言」并执行，结果马上显示在屏幕上。' },
+          { heading: '生活小例子', text: '就像用翻译软件：你输入中文，它翻译成外语。在 Python You 里，你输入 Python 代码，解释器负责把它翻译成「计算机语言」并执行，结果马上显示在屏幕上。' },
           {
             heading: '代码编译与执行全生命周期',
             text: 'Python 属于解释型语言，与编译型语言的执行逻辑有本质区别：\n1. 词法语法分析：逐字符读取代码，生成抽象语法树（AST），检查语法错误。\n2. 字节码生成：将语法树编译为底层虚拟机指令集，即 .pyc 字节码。\n3. 虚拟机执行：CPython 虚拟机逐条执行指令，管理内存分配与垃圾回收。\n4. 结果输出：将标准输出与错误信息重定向至页面终端展示。',
@@ -119,11 +119,11 @@ export const stage1: TutorialStage = {
           {
             heading: '你的第一个 Python 程序',
             text: '`print()` 是最基础的输出函数，用于在控制台打印内容。\n• 字符串内容需要用单引号或双引号包裹，两者效果一致\n• 多条 print 语句按顺序逐行输出\n• print 会自动在结尾添加换行符',
-            code: `# 经典入门程序 Hello World\nprint("Hello, Python!")\nprint("欢迎来到 PyStudio 编程世界")\nprint("100 + 200 =", 100 + 200)  # 支持直接输出计算结果`
+            code: `# 经典入门程序 Hello World\nprint("Hello, Python!")\nprint("欢迎来到 Python You 编程世界")\nprint("100 + 200 =", 100 + 200)  # 支持直接输出计算结果`
           },
           {
             heading: '小结',
-            text: 'Python 代码要经过解释器翻译才会运行；PyStudio 打开即用，无需安装；试着写一句 print("你好") 并运行，看到输出就说明你成功了。'
+            text: 'Python 代码要经过解释器翻译才会运行；Python You 打开即用，无需安装；试着写一句 print("你好") 并运行，看到输出就说明你成功了。'
           }
         ],
         codeExample: `# 基础公式验证\na, b, c = 3, 4, 5\nis_right_triangle = (a**2 + b**2 == c**2)\nprint(f"边长 {a},{b},{c} 是否构成直角三角形: {is_right_triangle}")`,
@@ -278,7 +278,7 @@ export const stage1: TutorialStage = {
                 ['空值', 'NoneType', 'None', '不可变', '可哈希', '代表空对象的单例类型']
               ]
             },
-            code: `# 遍历查看不同数据的类型\ndata_samples = [100, 3.14, "PyStudio", (1, 2), [3, 4], {"k": "v"}, True, None]\nfor val in data_samples:\n    print(f"值: {str(val):<12} | 类型: {type(val).__name__:<8}")`
+            code: `# 遍历查看不同数据的类型\ndata_samples = [100, 3.14, "Python You", (1, 2), [3, 4], {"k": "v"}, True, None]\nfor val in data_samples:\n    print(f"值: {str(val):<12} | 类型: {type(val).__name__:<8}")`
           },
           {
             heading: '类型判断两种方式',
@@ -428,7 +428,7 @@ export const stage1: TutorialStage = {
           {
             heading: '常用字符串内置方法',
             text: '字符串是不可变类型，所有修改类方法都会返回新字符串，原字符串不变：\n• 大小写转换：`.upper()`、`.lower()`、`.title()`、`.swapcase()`\n• 查找替换：`.find()`、`.index()`、`.replace(old, new)`\n• 拆分连接：`.split(分隔符)`、`分隔符.join(列表)`\n• 清理空白：`.strip()`、`.lstrip()`、`.rstrip()`\n• 判断类：`.startswith()`、`.endswith()`、`.isdigit()`、`.isalpha()`',
-            code: `text = "  PyStudio Python IDE  "\nclean_text = text.strip()\nprint("清除首尾空格:", clean_text)\nprint("全大写:", clean_text.upper())\nprint("是否以 Py 开头:", clean_text.startswith("Py"))\n\n# 分割与连接\nwords = clean_text.split(" ")\nprint("分割成列表:", words)\nprint("下划线拼接:", "_".join(words))`
+            code: `text = "  Python You Python IDE  "\nclean_text = text.strip()\nprint("清除首尾空格:", clean_text)\nprint("全大写:", clean_text.upper())\nprint("是否以 Py 开头:", clean_text.startswith("Py"))\n\n# 分割与连接\nwords = clean_text.split(" ")\nprint("分割成列表:", words)\nprint("下划线拼接:", "_".join(words))`
           },
           {
             heading: '小结',
@@ -506,7 +506,7 @@ export const stage1: TutorialStage = {
                 ['算术运算符', '**, //, %', '10 % 3', '1', '求余数、指数幂等数学运算'],
                 ['比较运算符', '==, !=, >=', '5 >= 2', 'True', '比较两个对象的数值大小'],
                 ['逻辑运算符', 'and, or, not', 'True and False', 'False', '具备短路特性的布尔组合'],
-                ['成员运算符', 'in, not in', '"Py" in "PyStudio"', 'True', '检测元素是否在可迭代容器中'],
+                ['成员运算符', 'in, not in', '"Py" in "Python You"', 'True', '检测元素是否在可迭代容器中'],
                 ['身份运算符', 'is, is not', 'a is b', 'bool', '比较内存地址 id(a) == id(b)']
               ]
             },

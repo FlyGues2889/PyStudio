@@ -192,7 +192,7 @@ fn write_temp_script(code: &str) -> Result<PathBuf, String> {
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_nanos())
         .unwrap_or(0);
-    let name = format!("pystudio_{}_{}.py", std::process::id(), nanos);
+    let name = format!("python_you_{}_{}.py", std::process::id(), nanos);
     let path = std::env::temp_dir().join(name);
     std::fs::write(&path, code).map_err(|e| format!("写入临时脚本失败: {e}"))?;
     Ok(path)

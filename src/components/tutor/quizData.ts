@@ -45,7 +45,7 @@ export interface QuizAnswersMap {
   [topicId: string]: { [questionId: string]: number };
 }
 
-const QUIZ_ANSWERS_KEY = 'pystudio_quiz_answers';
+const QUIZ_ANSWERS_KEY = 'python_you_quiz_answers';
 
 export function loadQuizAnswers(): QuizAnswersMap {
   try {
@@ -83,7 +83,7 @@ export function clearQuizAnswers(topicId: string) {
   }
 }
 
-const QUIZ_RESULTS_KEY = 'pystudio_quiz_results';
+const QUIZ_RESULTS_KEY = 'python_you_quiz_results';
 
 export function loadQuizResults(): QuizResults {
   try {
@@ -147,7 +147,7 @@ export function isQuizAllCorrect(topicId: string): boolean {
   return score.total > 0 && score.correct === score.total;
 }
 
-const COMPLETED_KEY = 'pystudio_completed_topics';
+const COMPLETED_KEY = 'python_you_completed_topics';
 
 export function markTopicCompleted(topicId: string) {
   try {

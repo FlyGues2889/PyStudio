@@ -236,7 +236,7 @@ export const stage5: TutorialStage = {
                 ['()', '分组捕获', '(\\d+)-(\\d+) 提取两组数字']
               ]
             },
-            code: `import re\n\ntext = "电话: 010-88886666, 手机: 13800138000, 邮箱: admin@pystudio.io"\n\n# 提取手机号\nmobiles = re.findall(r"1[3-9]\\d{9}", text)\nprint("手机号列表:", mobiles)\n\n# 脱敏邮箱\nmasked = re.sub(r"[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}", "***@***", text)\nprint("脱敏后文本:", masked)`
+            code: `import re\n\ntext = "电话: 010-88886666, 手机: 13800138000, 邮箱: admin@python-you.io"\n\n# 提取手机号\nmobiles = re.findall(r"1[3-9]\\d{9}", text)\nprint("手机号列表:", mobiles)\n\n# 脱敏邮箱\nmasked = re.sub(r"[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}", "***@***", text)\nprint("脱敏后文本:", masked)`
           },
           {
             heading: '正则最佳实践',
@@ -260,7 +260,7 @@ export const stage5: TutorialStage = {
       stage: 'Python 标准库',
       summary: 'pip 是 Python 的「应用商店」，一键安装别人写好的工具库。',
       content: {
-        overview: 'pip 是 Python 官方提供的包管理工具，负责从 PyPI（Python 的「应用商店」）下载安装第三方库。在 PyStudio 里，用内置的包管理器也能在线安装常用库。',
+        overview: 'pip 是 Python 官方提供的包管理工具，负责从 PyPI（Python 的「应用商店」）下载安装第三方库。在 Python You 里，用内置的包管理器也能在线安装常用库。',
         sections: [
           { heading: '生活小例子', text: '想用照片处理库 Pillow，不用自己写图片处理代码，在包管理器里搜 pillow、一键安装，然后 import PIL 就能用了。就像装 App：装好即用。' },
           {
@@ -285,12 +285,12 @@ export const stage5: TutorialStage = {
             code: `# 虚拟环境标准工作流\n# 1. 创建\n# python -m venv .venv\n# 2. 激活后安装依赖\n# pip install -r requirements.txt\n# 3. 导出当前依赖\n# pip freeze > requirements.txt`
           },
           {
-            heading: 'PyStudio 包管理器',
-            text: '在 PyStudio IDE 界面左侧工具栏中点击【包管理器】按钮，即可在线一键搜索安装 NumPy、Pandas、SymPy 等众多第三方库，无需手动敲命令。'
+            heading: '包管理器',
+            text: '在 IDE 界面左侧工具栏中点击【包管理器】按钮，即可在线一键搜索安装 NumPy、Pandas、SymPy 等众多第三方库，无需手动敲命令。'
           },
           {
             heading: '小结',
-            text: 'pip install 库名 安装，pip list 查看已装；PyStudio 内置包管理器支持在线安装纯 Python 库；装好的库用 import 导入即可使用；需要联网下载。'
+            text: 'pip install 库名 安装，pip list 查看已装；Python You 内置包管理器支持在线安装纯 Python 库；装好的库用 import 导入即可使用；需要联网下载。'
           }
         ],
         codeExample: `import sys\nprint("当前环境已装载的内嵌路径与模块总数:", len(sys.modules))`,
@@ -373,7 +373,7 @@ export const stage5: TutorialStage = {
           {
             heading: 'with 上下文管理器',
             text: '推荐始终使用 `with open(...) as f:` 语法：\n• 代码块结束自动关闭文件\n• 即使发生异常也能正确关闭\n• 不用手动写 f.close()',
-            code: `# 写入文件\nwith open("demo_output.txt", "w", encoding="utf-8") as f:\n    f.write("PyStudio 虚拟文件系统\\n")\n    f.write("第一行数据\\n第二行数据")\n\n# 读取文件\nwith open("demo_output.txt", "r", encoding="utf-8") as f:\n    lines = f.readlines()\n    for idx, line in enumerate(lines, 1):\n        print(f"第 [{idx}] 行: {line.strip()}")`
+            code: `# 写入文件\nwith open("demo_output.txt", "w", encoding="utf-8") as f:\n    f.write("Python You 虚拟文件系统\\n")\n    f.write("第一行数据\\n第二行数据")\n\n# 读取文件\nwith open("demo_output.txt", "r", encoding="utf-8") as f:\n    lines = f.readlines()\n    for idx, line in enumerate(lines, 1):\n        print(f"第 [{idx}] 行: {line.strip()}")`
           },
           {
             heading: '常用文件操作方法',
@@ -387,7 +387,7 @@ export const stage5: TutorialStage = {
         ],
         codeExample: `import os\nif os.path.exists("demo_output.txt"):\n    print("文件体积 (Bytes):", os.path.getsize("demo_output.txt"))`,
         tips: [
-          '在 PyStudio 中用代码创建或修改的文件，会自动实时同步至左侧 IDE 文件树视图中！',
+          '在 Python You 中用代码创建或修改的文件，会自动实时同步至左侧 IDE 文件树视图中！',
           '打开文本文件务必指定 encoding="utf-8"，避免不同系统乱码。'
         ]
       }

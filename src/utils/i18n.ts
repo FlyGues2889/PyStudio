@@ -34,7 +34,7 @@ const translations = {
 
     // Settings View
     settingsTitle: 'IDE 系统偏好设置',
-    settingsSubtitle: '自定义 PyStudio 的外观主题、语言与代码编辑器配置',
+    settingsSubtitle: '自定义 Python You 的外观主题、语言与代码编辑器配置',
     generalSettings: '通用设置',
     language: '界面语言',
     languageSubtitle: '选择 IDE 的系统显示语言',
@@ -57,16 +57,16 @@ const translations = {
     autoPairQuotes: '自动配对引号',
     autoPairQuotesSubtitle: '输入引号时自动补全另一半；选中文本时自动用引号包裹',
 
-    aboutTitle: '关于 PyStudio IDE',
-    aboutApp: 'PyStudio Python IDE',
+    aboutTitle: '关于 Python You IDE',
+    aboutApp: 'Python You IDE',
     aboutAppDesc: '基于浏览器 WASM 与 Pyodide 的本地 Python 集成开发环境',
     demoMode: '演示模式',
     demoModeSubtitle: '开启后使用轻量演示引擎，关闭则使用离线完整 Python WASM 引擎',
     aiEngine: '人工智能项目',
-    aiEngineDesc: '与 AI 一起流畅编码，让创意自然流淌',
+    aiEngineDesc: '本项目使用人工智能技术协助构建',
 
     // Code Editor & Tabs
-    welcomeTitle: '欢迎使用 PyStudio Python IDE',
+    welcomeTitle: '欢迎使用 Python You Python IDE',
     welcomeSubtitle: '请从左侧文件树选择一个 Python 文件或点击上方“新建文件”开始编码。',
     shortcutSave: '保存文件',
     shortcutRun: '运行脚本',

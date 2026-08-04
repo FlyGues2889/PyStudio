@@ -7,7 +7,7 @@ export const DEFAULT_WORKSPACE_ITEMS: FSItem[] = [
     path: '/main.py',
     isFolder: false,
     parentId: null,
-    content: `# PyStudio Python IDE - Main Entry Point
+    content: `# Python You Python IDE - Main Entry Point
 import sys
 import time
 from utils import greet_user, calculate_stats
@@ -15,7 +15,7 @@ from calculator import Calculator
 
 def main():
     print("=" * 45)
-    print("🚀 Welcome to PyStudio Local Python IDE!")
+    print("🚀 Welcome to Python You Local Python IDE!")
     print(f"🐍 Python Executable: {sys.executable}")
     print(f"⏰ Current Time: {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 45)
@@ -52,7 +52,7 @@ import math
 
 def greet_user(name: str) -> str:
     """Returns a warm greeting string."""
-    return f"Hello, {name}! PyStudio Python IDE is running locally."
+    return f"Hello, {name}! Python You Python IDE is running locally."
 
 def calculate_stats(numbers: list[float]) -> dict:
     """Calculates basic mathematical statistics for a list of numbers."""
@@ -169,7 +169,7 @@ if __name__ == "__main__":
         path: '/data/sample_data.json',
         isFolder: false,
         parentId: 'folder-data',
-        content: `{\n  "project": "PyStudio Local Python IDE",\n  "version": "0.3.1",\n  "features": [\n    "File Tree Explorer",\n    "Pyodide Python 3.11 Execution",\n    "Interactive REPL Console",\n    "Gemini AI Code Assistant"\n  ]\n}`
+        content: `{\n  "project": "Python You Local Python IDE",\n  "version": "0.3.1",\n  "features": [\n    "File Tree Explorer",\n    "Pyodide Python 3.11 Execution",\n    "Interactive REPL Console",\n    "Gemini AI Code Assistant"\n  ]\n}`
       }
     ]
   },
@@ -179,9 +179,9 @@ if __name__ == "__main__":
     path: '/README.md',
     isFolder: false,
     parentId: null,
-    content: `# PyStudio Python IDE
+    content: `# Python You Python IDE
 
-Welcome to **PyStudio**, a full-featured local Python IDE running directly in your browser.
+Welcome to **Python You**, a full-featured local Python IDE running directly in your browser.
 
 ## Features
 - **File Explorer**: Tree view attached directly next to sidebar. Create, edit, rename, and delete Python files and folders.
