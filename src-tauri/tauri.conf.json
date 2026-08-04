@@ -29,18 +29,10 @@
   },
   "bundle": {
     "active": true,
-    "targets": "nsis",
+    "targets": [],
     "icon": [
       "icons/appIcon.ico"
     ],
-    "category": "Utility",
-    "windows": {
-      "nsis": {
-        "languages": [
-          "SimpChinese"
-        ],
-        "displayLanguageSelector": true
-      }
-    }
+    "category": "Utility"
   }
 }
