@@ -3,6 +3,7 @@ import MD3Loading from './MD3Loading.vue';
 
 interface Props {
   show: boolean;
+  status?: string;
 }
 
 defineProps<Props>();
@@ -11,7 +12,10 @@ defineProps<Props>();
 <template>
   <Transition name="fade">
     <div v-if="show" class="m3-loading-modal-overlay" role="dialog" aria-modal="true">
-      <MD3Loading variant="contained" size="48" />
+      <div class="m3-loading-content">
+        <MD3Loading variant="contained" size="48" />
+        <p v-if="status" class="m3-loading-status">{{ status }}</p>
+      </div>
     </div>
   </Transition>
 </template>
@@ -30,6 +34,20 @@ defineProps<Props>();
   z-index: 30000;
 }
 
+.m3-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.m3-loading-status {
+  margin-top: 2.4rem;
+  font-size: var(--text-size-sm, 0.9rem);
+  color: var(--text-secondary);
+  letter-spacing: 0.2px;
+  user-select: none;
+}
+
 /* Transitions */
 .fade-enter-active,
 .fade-leave-active {
@@ -41,4 +59,3 @@ defineProps<Props>();
   opacity: 0;
 }
 </style>
-

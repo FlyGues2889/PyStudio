@@ -203,6 +203,7 @@ const handleFileInputChange = (e: Event) => {
 
 // App Initialization State
 const isInitializing = ref(true);
+const loadingStatus = ref('正在启动 PyStudio…');
 
 // Navigation State
 const activeNavTab = ref<'explorer' | 'tutorial' | 'console' | 'packages' | 'settings'>('explorer');
@@ -313,9 +314,11 @@ onMounted(async () => {
   const savedRoot = safeStorage.getItem('pystudio_workspace_root');
   if (nativeApi.available()) {
     try {
+      loadingStatus.value = '正在创建本地工作区文件夹…';
       // 只确保空文件夹存在（首次启动），不写入任何示例文件
       const defaultRoot = await nativeApi.ensureDefaultWorkspace();
       const root = savedRoot || defaultRoot;
+      loadingStatus.value = '正在扫描工作区文件…';
       const entries = await nativeApi.readDirectory(root);
       workspaceItems.value = fsEntriesToFSItems(entries);
       workspaceRootPath.value = root;
@@ -343,6 +346,7 @@ onMounted(async () => {
   }
 
   // 恢复上次会话打开的标签页与光标位置
+  loadingStatus.value = '正在恢复上次会话…';
   restoreSession();
 
   // Update theme mode
@@ -1321,7 +1325,7 @@ onMounted(() => {
     </div>
 
     <!-- App Initialization Loading Modal -->
-    <MD3LoadingModal :show="isInitializing" />
+    <MD3LoadingModal :show="isInitializing" :status="loadingStatus" />
 
     <!-- Snackbar Notification Toast -->
     <MD3Snackbar :message="toastMessage || ''" @close="toastMessage = null" />
