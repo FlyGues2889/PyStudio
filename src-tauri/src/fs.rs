@@ -29,8 +29,6 @@ const SKIP_DIRS: &[&str] = &[
     ".idea", ".vscode", ".pnpm-store", "dist", "target", "build",
 ];
 
-const MAX_FILE_SIZE: u64 = 1_048_576; // 超过 1MB 的文件不预读内容
-
 fn read_dir_recursive(dir: &Path) -> std::io::Result<Vec<FsEntry>> {
     let mut entries = Vec::new();
     let rd = fs::read_dir(dir)?;
@@ -50,13 +48,13 @@ fn read_dir_recursive(dir: &Path) -> std::io::Result<Vec<FsEntry>> {
                 content: None,
             });
         } else if path.is_file() {
-            let content = read_text_file_if_small(&path);
+            // 内容改为按需加载（打开文件时再读取），避免启动时全量读取拖慢初始化
             entries.push(FsEntry {
                 name,
                 path: path.to_string_lossy().to_string(),
                 is_folder: false,
                 children: None,
-                content,
+                content: None,
             });
         }
     }
@@ -68,17 +66,6 @@ fn read_dir_recursive(dir: &Path) -> std::io::Result<Vec<FsEntry>> {
         a.name.to_lowercase().cmp(&b.name.to_lowercase())
     });
     Ok(entries)
-}
-
-fn read_text_file_if_small(path: &Path) -> Option<String> {
-    if let Ok(meta) = fs::metadata(path) {
-        if meta.len() > MAX_FILE_SIZE {
-            return None;
-        }
-    }
-    fs::read_to_string(path)
-        .ok()
-        .map(|s| s.trim_start_matches('\u{feff}').to_string()) // 去除 UTF-8 BOM
 }
 
 #[tauri::command]
@@ -156,17 +143,23 @@ pub fn ensure_default_workspace(app: AppHandle) -> Result<String, String> {
         Ok(exe) => match exe.parent() {
             Some(dir) => {
                 let candidate = dir.join("WorkSpace");
-                match fs::create_dir_all(&candidate) {
-                    Ok(_) => candidate,
-                    Err(_) => app_data_root()?,
+                if candidate.exists() {
+                    candidate
+                } else {
+                    match fs::create_dir_all(&candidate) {
+                        Ok(_) => candidate,
+                        Err(_) => app_data_root()?,
+                    }
                 }
             }
             None => app_data_root()?,
         },
         Err(_) => app_data_root()?,
     };
-    // 确保目录存在（只创建空文件夹，不做任何初始化写入）
-    fs::create_dir_all(&root).map_err(|e| e.to_string())?;
+    // 仅在不存在时才创建空文件夹，避免每次启动都重复建目录
+    if !root.exists() {
+        fs::create_dir_all(&root).map_err(|e| e.to_string())?;
+    }
     Ok(root.to_string_lossy().to_string())
 }
 

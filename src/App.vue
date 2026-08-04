@@ -188,7 +188,10 @@ const loadWorkspaceFromDisk = async (root: string) => {
     safeStorage.setItem('python_you_workspace_root', root);
 
     const mainFile = findFileByPath(workspaceItems.value, '/main.py');
-    if (mainFile) openFileInTab(mainFile);
+    if (mainFile) {
+      await ensureFileContent(mainFile);
+      openFileInTab(mainFile);
+    }
     showToast('已打开本地工作区: ' + root);
   } catch (err: any) {
     showToast('打开工作区失败: ' + (err?.message || err));
@@ -267,7 +270,7 @@ const handleCursorChange = (payload: { path: string; line: number; col: number }
 };
 
 // 重新打开上次会话的标签页，并恢复活动标签与光标
-const restoreSession = () => {
+const restoreSession = async () => {
   try {
     const raw = safeStorage.getItem(SESSION_KEY);
     if (!raw) return;
@@ -280,7 +283,10 @@ const restoreSession = () => {
         .map((p: string) => findFileByPath(workspaceItems.value, p))
         .filter((f): f is FSItem => !!f);
       openTabs.value = [];
-      for (const f of files) openFileInTab(f);
+      for (const f of files) {
+        await ensureFileContent(f);
+        openFileInTab(f);
+      }
       if (session.active) {
         const activeTab = openTabs.value.find((t) => t.path === session.active);
         if (activeTab) activeEditorTabId.value = activeTab.id;
@@ -313,20 +319,36 @@ onMounted(async () => {
 
   const savedRoot = safeStorage.getItem('python_you_workspace_root');
   if (nativeApi.available()) {
-    try {
-      loadingStatus.value = '正在创建本地工作区文件夹…';
-      // 只确保空文件夹存在（首次启动），不写入任何示例文件
-      const defaultRoot = await nativeApi.ensureDefaultWorkspace();
-      const root = savedRoot || defaultRoot;
-      loadingStatus.value = '正在扫描工作区文件…';
-      const entries = await nativeApi.readDirectory(root);
-      workspaceItems.value = fsEntriesToFSItems(entries);
-      workspaceRootPath.value = root;
-      pythonRunner.workspaceRoot = root;
-      safeStorage.setItem('python_you_workspace_root', root);
-    } catch (e) {
-      // 磁盘工作区不可用，退回虚拟工作区
-      loadVirtualWorkspace();
+    // 优先复用已保存的工作区根目录：直接读取，跳过文件夹创建，避免每次启动重复建目录
+    let loadedFromDisk = false;
+    if (savedRoot) {
+      try {
+        loadingStatus.value = '正在扫描工作区文件…';
+        const entries = await nativeApi.readDirectory(savedRoot);
+        workspaceItems.value = fsEntriesToFSItems(entries);
+        workspaceRootPath.value = savedRoot;
+        pythonRunner.workspaceRoot = savedRoot;
+        safeStorage.setItem('python_you_workspace_root', savedRoot);
+        loadedFromDisk = true;
+      } catch (e) {
+        // 保存的根目录已失效，继续走首次创建流程
+      }
+    }
+    if (!loadedFromDisk) {
+      try {
+        // 仅当文件夹不存在（或上次根目录失效）时才创建
+        loadingStatus.value = '正在创建本地工作区文件夹…';
+        const defaultRoot = await nativeApi.ensureDefaultWorkspace();
+        loadingStatus.value = '正在扫描工作区文件…';
+        const entries = await nativeApi.readDirectory(defaultRoot);
+        workspaceItems.value = fsEntriesToFSItems(entries);
+        workspaceRootPath.value = defaultRoot;
+        pythonRunner.workspaceRoot = defaultRoot;
+        safeStorage.setItem('python_you_workspace_root', defaultRoot);
+      } catch (e) {
+        // 磁盘工作区不可用，退回虚拟工作区
+        loadVirtualWorkspace();
+      }
     }
   } else {
     loadVirtualWorkspace();
@@ -342,12 +364,13 @@ onMounted(async () => {
   // Open default main.py tab
   const mainFile = findFileByPath(workspaceItems.value, '/main.py');
   if (mainFile) {
+    await ensureFileContent(mainFile);
     openFileInTab(mainFile);
   }
 
   // 恢复上次会话打开的标签页与光标位置
   loadingStatus.value = '正在恢复上次会话…';
-  restoreSession();
+  await restoreSession();
 
   // Update theme mode
   updateTheme();
@@ -406,6 +429,23 @@ function findFileByPath(items: FSItem[], path: string): FSItem | null {
   return null;
 }
 
+// 按需加载文件内容（目录扫描时不预读，打开/运行/下载时才从磁盘读取）
+const ensureFileContent = async (file: FSItem): Promise<void> => {
+  if (!workspaceRootPath.value || file.isFolder) return;
+  if (file.content && file.content.length > 0) return;
+  try {
+    const content = await nativeApi.readFile(absPath(workspaceRootPath.value, file.path));
+    file.content = content;
+    // 若该文件已有打开的标签页，同步其内容
+    const tab = openTabs.value.find((t) => t.fileId === file.id);
+    if (tab) {
+      tab.content = content;
+      tab.savedContent = content;
+      tab.isDirty = false;
+    }
+  } catch (e) {}
+};
+
 function openFileInTab(file: FSItem) {
   const existing = openTabs.value.find((t) => t.fileId === file.id);
   if (existing) {
@@ -427,7 +467,8 @@ function openFileInTab(file: FSItem) {
   activeNavTab.value = 'explorer';
 }
 
-const handleSelectFile = (file: FSItem) => {
+const handleSelectFile = async (file: FSItem) => {
+  await ensureFileContent(file);
   openFileInTab(file);
 };
 
@@ -555,6 +596,7 @@ const confirmDelete = () => {
 
 // Run file directly from tree
 const handleRunFile = async (item: FSItem) => {
+  await ensureFileContent(item);
   openFileInTab(item);
   activeNavTab.value = 'explorer';
 
@@ -571,7 +613,8 @@ const handleRunFile = async (item: FSItem) => {
 };
 
 // Download File
-const handleDownloadFile = (item: FSItem) => {
+const handleDownloadFile = async (item: FSItem) => {
+  await ensureFileContent(item);
   const blob = new Blob([item.content || ''], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
